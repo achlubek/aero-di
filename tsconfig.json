@@ -30,7 +30,6 @@
     },
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["./src/**/*", "./test/**/*", "./classes-reflection.ts", "./transformer.ts"],
+  "include": ["./src/**/*", "./test/**/*", "./generateReflection.ts"],
   "exclude": ["node_modules"]
 }
-

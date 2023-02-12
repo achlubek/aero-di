@@ -4,9 +4,7 @@
     "paths": {
       "@app/*": ["./src/*"]
     },
-    "plugins": [
-      { "transform": "./transformer.ts" }
-    ]
+    "plugins": [{ "transform": "./transformer.ts" }]
   },
   "include": ["./src/**/*"],
   "exclude": ["node_modules", "./src/**/*.spec.ts"]

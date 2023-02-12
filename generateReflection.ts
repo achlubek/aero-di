@@ -1,10 +1,9 @@
-// transformer1-module
 import { scan } from "fast-scan-dir-recursive";
 import * as fs from "fs";
 import minimatch from "minimatch";
 import * as path from "path";
+import * as prettier from "prettier";
 import * as ts from "typescript";
-import { ScriptTarget } from "typescript";
 
 const initArray = <T>(size: number, constructor: (index: number) => T): T[] => {
   return [...new Array<T>(size)].map((_, i) => constructor(i));
@@ -184,15 +183,22 @@ const determineType = (node: ts.Node): string => {
   return "Unknown";
 };
 
-const recurseiveDebug = (node: ts.Node, level: number, maxLevel: number) => {
+export const recursiveDebugAST = (
+  node: ts.Node,
+  level: number,
+  maxLevel: number
+): void => {
   const levelstr = initArray(level, () => "-").join("");
   const type = determineType(node);
 
+  // eslint-disable-next-line no-console
   console.log(
     `${levelstr} ${node.constructor.name}/${type}: ${node.getText()}`
   );
   if (level < maxLevel) {
-    node.getChildren().forEach((n) => recurseiveDebug(n, level + 1, maxLevel));
+    node
+      .getChildren()
+      .forEach((n) => recursiveDebugAST(n, level + 1, maxLevel));
   }
 };
 
@@ -305,6 +311,9 @@ export const extractClass = (
     constructorParameters.push(...extractConstructor(childConstructor));
   }
 
+  // eslint-disable-next-line no-console
+  console.log(`Found class ${fqcn}`);
+
   return {
     fqcn,
     name,
@@ -314,86 +323,71 @@ export const extractClass = (
   };
 };
 
-const formatAndSave = (classes: ClassData[]): void => {
+const formatAndSave = async (classes: ClassData[]): Promise<void> => {
   const jsons = classes.map((c) => {
     const path = c.fqcn.replace(new RegExp("/" + c.name + "$"), "");
     const importStr = `new Promise((r) => void import("./${path}").then((imp) => r(imp.${c.name})))`;
-    return `  {
-    fqcn: "${c.fqcn}",
-    name: "${c.name}",
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    ctor: ${importStr},
-    implementsInterfaces: ["${c.implementsInterfaces.join(", ")}"],
-    extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
-    constructorParameters: ${JSON.stringify(
-      c.constructorParameters,
-      undefined,
-      2
-    )},
-  }
-  `;
+    return `{
+      fqcn: "${c.fqcn}",
+      name: "${c.name}",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      ctor: ${importStr},
+      implementsInterfaces: ["${c.implementsInterfaces.join(", ")}"],
+      extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
+      constructorParameters: ${JSON.stringify(c.constructorParameters)},
+    }`;
   });
-  const json = `[
-${jsons.join(",")}]`;
+  const json = `[${jsons.join(",")}]`;
 
-  const dataType = `export interface ParameterData {
-  name: string;
-  type: string;
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Constructor = new (...args: any[]) => any;
-export interface ClassData {
-  fqcn: string;
-  name: string;
-  ctor: Promise<Constructor>;
-  implementsInterfaces: string[];
-  extendsClass: string | null;
-  constructorParameters: ParameterData[];
-}
-`;
-  const contents = `${dataType}
-export const classesReflection: ClassData[] = ${json};`;
-  fs.writeFileSync("src/classesReflection.ts", contents);
+  const dataType = `
+    export interface ParameterData {
+      name: string;
+      type: string;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type Constructor = new (...args: any[]) => any;
+    export interface ClassData {
+      fqcn: string;
+      name: string;
+      ctor: Promise<Constructor>;
+      implementsInterfaces: string[];
+      extendsClass: string | null;
+      constructorParameters: ParameterData[];
+    }`;
+
+  const contents = `${dataType}\n export const classesReflection: ClassData[] = ${json};`;
+
+  const outPath = "src/classesReflection.ts";
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+  const prettierConfigOptions = await prettier.resolveConfig(outPath);
+
+  if (prettierConfigOptions) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    prettierConfigOptions.parser = "typescript";
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+  const formatted = prettier.format(
+    contents,
+    prettierConfigOptions ?? {
+      parser: "typescript",
+    }
+  ) as string;
+
+  fs.writeFileSync(outPath, formatted);
 };
 
-const compilerOptions: ts.CompilerOptions = {
-  target: ScriptTarget.ESNext,
-  baseUrl: "./",
-  declaration: false,
-  removeComments: true,
-  emitDecoratorMetadata: false,
-  experimentalDecorators: false,
-  allowSyntheticDefaultImports: false,
-  allowJs: false,
-  incremental: false,
-  sourceMap: false,
-  esModuleInterop: false,
-  noImplicitAny: false,
-  noUnusedLocals: true,
-  noErrorTruncation: true,
-  noFallthroughCasesInSwitch: true,
-  strictPropertyInitialization: true,
-  noImplicitOverride: true,
-  noImplicitReturns: true,
-  noImplicitThis: true,
-  noUnusedParameters: false,
-  strict: true,
-  paths: {
-    "@app/*": ["./src/*"],
-    "@test/*": ["./test/*"],
-  },
-  typeRoots: ["./node_modules/@types"],
-};
-
-async function generateReflectionData() {
-  fs.unlinkSync("src/classesReflection.ts");
+async function generateReflectionData(): Promise<void> {
+  if (fs.existsSync("src/classesReflection.ts")) {
+    fs.unlinkSync("src/classesReflection.ts");
+  }
   const filesAll = await scan("./src");
   const files = filesAll
     .map((file) => file.replaceAll("\\", "/"))
     .filter(
       (file) => minimatch(file, "src/**/*.ts") || minimatch(file, "src/*.ts")
     );
-  const program = ts.createProgram(files, compilerOptions);
+  const program = ts.createProgram(files, {});
   program.getTypeChecker();
   const sourceFiles = program.getSourceFiles();
   const classes: ClassData[] = [];
@@ -404,23 +398,18 @@ async function generateReflectionData() {
       (minimatch(filePath, "src/**/*.ts") || minimatch(filePath, "src/*.ts")) &&
       !minimatch(filePath, "src/**/*.spec.ts")
     ) {
+      // eslint-disable-next-line no-console
       console.log(`Analyzing file ${filePath}`);
-      const visitor = (node: ts.Node) => {
+      const visitor = (node: ts.Node): void => {
         if (ts.isClassDeclaration(node) && isClassExported(node)) {
           classes.push(extractClass(sourceFile, node));
         }
         ts.forEachChild(node, visitor);
       };
-      ts.forEachChild(
-        sourceFile,
-        () => {},
-        (nodes) => {
-          nodes.map(visitor);
-        }
-      );
+      ts.forEachChild(sourceFile, visitor);
     }
   }
-  formatAndSave(classes);
+  await formatAndSave(classes);
 }
 
 void generateReflectionData();

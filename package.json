@@ -11,9 +11,9 @@
     "style:fix": "yarn prettier:fix && yarn lint:fix",
     "test": "mocha --config .mocharc.json",
     "test:coverage": "nyc --reporter=html yarn mocha",
-    "build:reflection": "yarn rimraf dist && ttsc -P tsconfig.reflect.json",
+    "build:reflection": "yarn ts-node generateReflection.ts",
     "build": "yarn build:reflection && yarn rimraf dist && tsc -P tsconfig.build.json && resolve-tspaths --project tsconfig.build.json",
-    "start:dev": "ts-node --compiler ttypescript -r dotenv/config -r tsconfig-paths/register src/main.ts",
+    "start:dev": "ts-node -r dotenv/config -r tsconfig-paths/register src/main.ts",
     "start:dist": "node dist/main.js"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "@types/chai": "4.*",
     "@types/mocha": "10.*",
     "@types/node": "18.*",
+    "@types/prettier": "^2.7.2",
     "@types/sinon": "10.*",
     "@types/ts-nameof": "^4.2.2",
     "@typescript-eslint/eslint-plugin": "5.*",
@@ -45,7 +46,6 @@
     "sinon": "15.*",
     "ts-node": "10.*",
     "tsconfig-paths": "4.*",
-    "ttypescript": "^1.5.15",
     "typescript": "4.*"
   }
 }
