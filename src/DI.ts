@@ -1,11 +1,10 @@
 import minimatch from "minimatch";
 
-import { classesReflection } from "../classes-reflection";
-
 import {
   getClassMetadata,
   getClassesImplementingInterface,
 } from "@app/classMetadata";
+import { classesReflection } from "@app/classesReflection";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor = new (...args: any[]) => any;

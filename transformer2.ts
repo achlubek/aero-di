@@ -1,7 +1,10 @@
 // transformer1-module
+import { scan } from "fast-scan-dir-recursive";
 import * as fs from "fs";
+import minimatch from "minimatch";
 import * as path from "path";
 import * as ts from "typescript";
+import { ScriptTarget } from "typescript";
 
 const initArray = <T>(size: number, constructor: (index: number) => T): T[] => {
   return [...new Array<T>(size)].map((_, i) => constructor(i));
@@ -245,7 +248,8 @@ interface ClassData {
 }
 
 export const isClassExported = (classNode: ts.Node): boolean => {
-  return classNode.getChildAt(0).getText() === "export";
+  const chd = classNode.getChildren();
+  return chd.length > 0 && chd[0].getText() === "export";
 };
 
 export const extractClass = (
@@ -352,18 +356,71 @@ export const classesReflection: ClassData[] = ${json};`;
   fs.writeFileSync("src/classesReflection.ts", contents);
 };
 
-export default function (_: ts.Program, _eh: {}) {
+const compilerOptions: ts.CompilerOptions = {
+  target: ScriptTarget.ESNext,
+  baseUrl: "./",
+  declaration: false,
+  removeComments: true,
+  emitDecoratorMetadata: false,
+  experimentalDecorators: false,
+  allowSyntheticDefaultImports: false,
+  allowJs: false,
+  incremental: false,
+  sourceMap: false,
+  esModuleInterop: false,
+  noImplicitAny: false,
+  noUnusedLocals: true,
+  noErrorTruncation: true,
+  noFallthroughCasesInSwitch: true,
+  strictPropertyInitialization: true,
+  noImplicitOverride: true,
+  noImplicitReturns: true,
+  noImplicitThis: true,
+  noUnusedParameters: false,
+  strict: true,
+  paths: {
+    "@app/*": ["./src/*"],
+    "@test/*": ["./test/*"],
+  },
+  typeRoots: ["./node_modules/@types"],
+};
+
+async function generateReflectionData() {
+  fs.unlinkSync("src/classesReflection.ts");
+  const filesAll = await scan("./src");
+  const files = filesAll
+    .map((file) => file.replaceAll("\\", "/"))
+    .filter(
+      (file) => minimatch(file, "src/**/*.ts") || minimatch(file, "src/*.ts")
+    );
+  const program = ts.createProgram(files, compilerOptions);
+  program.getTypeChecker();
+  const sourceFiles = program.getSourceFiles();
   const classes: ClassData[] = [];
-  return (ctx: ts.TransformationContext) => {
-    return (sourceFile: ts.SourceFile) => {
-      function visitor(node: ts.Node): ts.Node {
+  for (const sourceFile of sourceFiles) {
+    const filePath = sourceFile.fileName;
+    if (
+      !sourceFile.isDeclarationFile &&
+      (minimatch(filePath, "src/**/*.ts") || minimatch(filePath, "src/*.ts")) &&
+      !minimatch(filePath, "src/**/*.spec.ts")
+    ) {
+      console.log(`Analyzing file ${filePath}`);
+      const visitor = (node: ts.Node) => {
         if (ts.isClassDeclaration(node) && isClassExported(node)) {
           classes.push(extractClass(sourceFile, node));
-          formatAndSave(classes); // excessive, but a quick fix
         }
-        return ts.visitEachChild(node, visitor, ctx);
-      }
-      return ts.visitEachChild(sourceFile, visitor, ctx);
-    };
-  };
+        ts.forEachChild(node, visitor);
+      };
+      ts.forEachChild(
+        sourceFile,
+        () => {},
+        (nodes) => {
+          nodes.map(visitor);
+        }
+      );
+    }
+  }
+  formatAndSave(classes);
 }
+
+void generateReflectionData();

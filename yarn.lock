@@ -1329,6 +1329,11 @@ fast-levenshtein@^2.0.6:
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==
 
+fast-scan-dir-recursive@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/fast-scan-dir-recursive/-/fast-scan-dir-recursive-0.0.4.tgz#a61ae1c208879918e93b31c2dc6469f21e297e8e"
+  integrity sha512-Jq1UGTYybYO+xbmkiy8BE/wcDBntdVywTvVHjVquWvaUeNU1iGz02Y1u0dO34mVZOD2Bp+Z5ktnkzPi9PjkPnQ==
+
 fastq@^1.6.0:
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.15.0.tgz#d04d07c6a2a68fe4599fea8d2e103a937fae6b3a"

@@ -18,12 +18,17 @@ export class TestClass implements TestClassInterface {
   ) {}
 }
 
-const di = new DI();
-di.registerValue("testing", someValue);
-di.registerByFqcnGlob("src/**/*").then(() => {
+async function main(): Promise<void> {
+  const di = new DI();
+  di.registerValue("testing", someValue);
+  await di.registerByFqcnGlob("**/*");
+
   const testResolved =
     di.wireInterface<TestClassInterface>("TestClassInterface");
 
-  // eslint-disable-next-line no-console
-  console.log(testResolved);
-});
+  const logger = di.wireInterface<LoggerInterface>("LoggerInterface");
+
+  logger.info(main, JSON.stringify(testResolved, undefined, 2));
+}
+
+void main();

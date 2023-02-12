@@ -36,6 +36,7 @@
     "eslint-config-prettier": "8.*",
     "eslint-plugin-import": "2.*",
     "eslint-plugin-prettier": "4.*",
+    "fast-scan-dir-recursive": "^0.0.4",
     "mocha": "10.*",
     "nyc": "15.*",
     "prettier": "2.*",

@@ -28,8 +28,9 @@
       "@app/*": ["./src/*"],
       "@test/*": ["./test/*"]
     },
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./src/**/*", "./test/**/*", "./classes-reflection.ts", "./transformer.ts"],
   "exclude": ["node_modules"]
 }
+
