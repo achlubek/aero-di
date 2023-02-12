@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "declaration": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "allowSyntheticDefaultImports": false,
+    "allowJs": false,
+    "incremental": false,
+    "sourceMap": false,
+    "esModuleInterop": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictPropertyInitialization": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": false,
+    "strict": true,
+    "paths": {
+      "@app/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    },
+    "typeRoots": ["./node_modules/@types"],
+  },
+  "include": ["./src/**/*", "./test/**/*", "classes-reflection.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,25 @@
+version: 2.1
+orbs:
+  node: circleci/node@5.1.0
+jobs:
+  build_and_test:
+    executor: node/default
+    resource_class: small
+    steps:
+      - checkout
+      - node/install:
+          install-yarn: true
+          node-version: "18.14"
+      - node/install-packages:
+          pkg-manager: yarn
+      - run: yarn prettier
+      - run: yarn lint
+      - run: yarn build
+      - run: yarn test:coverage
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+workflows:
+  build_and_test:
+    jobs:
+      - build_and_test
