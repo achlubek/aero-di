@@ -1,9 +1,12 @@
+#!/usr/bin/env node
 import { scan } from "fast-scan-dir-recursive";
 import * as fs from "fs";
 import minimatch from "minimatch";
 import * as path from "path";
 import * as prettier from "prettier";
+import * as process from "process";
 import * as ts from "typescript";
+import { parseArgs } from "util";
 
 const initArray = <T>(size: number, constructor: (index: number) => T): T[] => {
   return [...new Array<T>(size)].map((_, i) => constructor(i));
@@ -231,7 +234,8 @@ const extractParameter = (paramNode: ts.Node): ParameterData => {
   );
   const nodeTrees = children.filter((n) => n.constructor.name === "NodeObject");
   const firstIdentifier = identifiers[0];
-  const lastNode = nodeTrees[nodeTrees.length - 1];
+  const lastNode =
+    nodeTrees[nodeTrees.length - 1] ?? children[children.length - 1];
   return {
     name: firstIdentifier.getText(),
     type: lastNode.getText(),
@@ -259,6 +263,7 @@ export const isClassExported = (classNode: ts.Node): boolean => {
 };
 
 export const extractClass = (
+  baseDir: string,
   src: ts.SourceFile,
   classNode: ts.Node
 ): ClassData => {
@@ -267,7 +272,7 @@ export const extractClass = (
   const name = identifiers[0].getText();
 
   const fqcn = `${path
-    .relative(path.join(process.cwd(), "src"), src.fileName)
+    .relative(baseDir, src.fileName)
     .replace(/.ts$/, "")
     .replaceAll("\\", "/")}/${name}`;
 
@@ -323,7 +328,11 @@ export const extractClass = (
   };
 };
 
-const formatAndSave = async (classes: ClassData[]): Promise<void> => {
+const formatAndSave = async (
+  baseDir: string,
+  outFile: string,
+  classes: ClassData[]
+): Promise<void> => {
   const jsons = classes.map((c) => {
     const path = c.fqcn.replace(new RegExp("/" + c.name + "$"), "");
     const importStr = `new Promise((r) => void import("./${path}").then((imp) => r(imp.${c.name})))`;
@@ -332,7 +341,7 @@ const formatAndSave = async (classes: ClassData[]): Promise<void> => {
       name: "${c.name}",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       ctor: ${importStr},
-      implementsInterfaces: ["${c.implementsInterfaces.join(", ")}"],
+      implementsInterfaces: ${JSON.stringify(c.implementsInterfaces)},
       extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
       constructorParameters: ${JSON.stringify(c.constructorParameters)},
     }`;
@@ -361,7 +370,7 @@ const formatAndSave = async (classes: ClassData[]): Promise<void> => {
 
   const contents = `${warning}\n${dataType}\n export const classesReflection: ClassData[] = ${json};`;
 
-  const outPath = "src/classesReflection.ts";
+  const outPath = `${baseDir}/${outFile}`;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
   const prettierConfigOptions = await prettier.resolveConfig(outPath);
 
@@ -380,16 +389,20 @@ const formatAndSave = async (classes: ClassData[]): Promise<void> => {
   fs.writeFileSync(outPath, formatted);
 };
 
-async function generateReflectionData(): Promise<void> {
-  if (fs.existsSync("src/classesReflection.ts")) {
-    fs.unlinkSync("src/classesReflection.ts");
-  }
-  const filesAll = await scan("./src");
+async function generateReflectionData(
+  baseDir: string,
+  outFile: string,
+  includeGlob: string,
+  excludeGlob: string
+): Promise<void> {
+  const filesAll = await scan(baseDir);
   const files = filesAll
     .map((file) => file.replaceAll("\\", "/"))
-    .filter(
-      (file) => minimatch(file, "src/**/*.ts") || minimatch(file, "src/*.ts")
-    );
+    .filter((file) => minimatch(file, includeGlob))
+    .filter((file) => !minimatch(file, excludeGlob))
+    .map((file) => "./" + path.relative(baseDir, file))
+    .map((file) => file.replaceAll("\\", "/"));
+  process.chdir(baseDir);
   const program = ts.createProgram(files, {});
   program.getTypeChecker();
   const sourceFiles = program.getSourceFiles();
@@ -398,21 +411,86 @@ async function generateReflectionData(): Promise<void> {
     const filePath = sourceFile.fileName;
     if (
       !sourceFile.isDeclarationFile &&
-      (minimatch(filePath, "src/**/*.ts") || minimatch(filePath, "src/*.ts")) &&
-      !minimatch(filePath, "src/**/*.spec.ts")
+      minimatch(filePath, includeGlob) &&
+      !minimatch(filePath, excludeGlob)
     ) {
       // eslint-disable-next-line no-console
       console.log(`Analyzing file ${filePath}`);
       const visitor = (node: ts.Node): void => {
         if (ts.isClassDeclaration(node) && isClassExported(node)) {
-          classes.push(extractClass(sourceFile, node));
+          classes.push(extractClass(baseDir, sourceFile, node));
         }
         ts.forEachChild(node, visitor);
       };
       ts.forEachChild(sourceFile, visitor);
     }
   }
-  await formatAndSave(classes);
+  await formatAndSave(baseDir, outFile, classes);
 }
 
-void generateReflectionData();
+const options = {
+  baseDir: {
+    type: "string" as "string" | "boolean",
+    short: "d",
+  },
+  outFile: {
+    type: "string" as "string" | "boolean",
+    short: "o",
+  },
+  includeGlob: {
+    type: "string" as "string" | "boolean",
+    short: "i",
+  },
+  excludeGlob: {
+    type: "string" as "string" | "boolean",
+    short: "e",
+  },
+};
+
+let baseDir = "";
+let outFile = "";
+let includeGlob = "";
+let excludeGlob = "";
+
+try {
+  const { values } = parseArgs({
+    options,
+  });
+  baseDir = path.resolve(values.baseDir as string);
+  outFile = values.outFile as string;
+  includeGlob = values.includeGlob as string;
+  excludeGlob = values.excludeGlob as string;
+  if (!baseDir) {
+    throw new Error(`Base directory argument missing`);
+  }
+  if (!outFile) {
+    throw new Error(`Out file argument missing`);
+  }
+  if (!includeGlob) {
+    throw new Error(`Include glob matcher argument missing`);
+  }
+  if (!excludeGlob) {
+    throw new Error(`Exclude glob matcher argument missing`);
+  }
+  if (!fs.existsSync(baseDir)) {
+    throw new Error(`Base directory ${baseDir} does not exist`);
+  }
+  // eslint-disable-next-line no-console
+  console.log({
+    baseDir,
+    outFile,
+    includeGlob,
+    excludeGlob,
+  });
+  void generateReflectionData(baseDir, outFile, includeGlob, excludeGlob);
+} catch (e) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  // eslint-disable-next-line no-console
+  console.error(e.message);
+  // eslint-disable-next-line no-console
+  console.log(
+    `Usage example: aero-gen --baseDir=/home/code --outFile=generated.ts --includeGlob="**/*.spec.ts" --excludeGlob="**/*.spec.ts"`
+  );
+  process.exit(1);
+}

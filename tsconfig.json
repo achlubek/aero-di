@@ -5,7 +5,7 @@
     "target": "ES2022",
     "outDir": "./dist",
     "baseUrl": "./",
-    "declaration": false,
+    "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": false,
@@ -22,7 +22,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedParameters": false,
+    "noUnusedParameters": true,
     "strict": true,
     "paths": {
       "@app/*": ["./src/*"],
@@ -30,6 +30,6 @@
     },
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["./src/**/*", "./test/**/*", "./generateReflection.ts"],
+  "include": ["./src/**/*", "./test/**/*", "./src/generateReflection.ts"],
   "exclude": ["node_modules"]
 }

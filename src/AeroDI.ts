@@ -1,5 +1,3 @@
-import minimatch from "minimatch";
-
 export interface ParameterData {
   name: string;
   type: string;
@@ -18,34 +16,47 @@ export interface ClassData {
   constructorParameters: ParameterData[];
 }
 
-export class DI {
-  private readonly registeredConstructors: Constructor[] = [];
+export class AeroDI {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly createdInstances: Record<string, any> = {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly registeredConstantValues: Record<string, any> = {};
 
-  public constructor(private readonly classesData: ClassData[]) {}
-
-  public async registerByFqcnGlob(glob: string): Promise<void> {
-    for (const classData of this.classesData) {
-      if (minimatch(classData.fqcn, glob)) {
-        this.register(await classData.ctor);
-      }
-    }
-  }
-
-  public register(classConstructor: Constructor): void {
-    this.registeredConstructors.push(classConstructor);
+  public constructor(private readonly classesData: ClassData[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.createdInstances[this.constructor.name] = this;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public registerValue(parameterName: string, value: any): void {
+  public registerInstance(value: object): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.createdInstances[value.constructor.name] = value;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public registerInstanceForTypeName(typeName: string, value: object): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.createdInstances[typeName] = value;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public registerConstantValue(parameterName: string, value: any): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.registeredConstantValues[parameterName] = value;
   }
 
-  public async wireInterface<T>(interfaceName: string): Promise<T> {
+  // todo this cam be done better
+  public registerScopedConstantValue(
+    className: string,
+    parameterName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any
+  ): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.registeredConstantValues[className + "/" + parameterName] = value;
+  }
+
+  public async autowireInterface<T>(interfaceName: string): Promise<T> {
     const implementing = this.getClassesImplementingInterface(interfaceName);
     if (implementing.length === 0) {
       throw new Error(`No implementations for interface ${interfaceName}`);
@@ -56,47 +67,47 @@ export class DI {
       );
     }
     const classData = implementing[0];
-    const ctor = this.registeredConstructors.find((c) => {
-      const refl = this.getClassMetadata(c);
-      if (refl) {
-        return refl.fqcn === classData.fqcn;
-      } else {
-        return false;
-      }
-    });
-    if (!ctor) {
-      throw new Error(`No implementation found for interface ${interfaceName}`);
-    }
-    const ctorMetadata = this.getClassMetadata(ctor);
-    if (!ctorMetadata) {
-      throw new Error(
-        `No implementation metadata found for interface ${interfaceName}`
-      );
-    }
-    return this.wireClassData<T>(ctorMetadata);
+    return this.autowireClassData<T>(classData);
   }
 
-  public async wireClassData<T>(classData: ClassData): Promise<T> {
+  public async autowireClassData<T>(classData: ClassData): Promise<T> {
+    if (this.createdInstances[classData.name]) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return this.createdInstances[classData.name];
+    }
     const paramsDefinitions = classData.constructorParameters;
     const params = await Promise.all(
       paramsDefinitions.map(async (param) => {
+        if (this.createdInstances[param.type]) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          return this.createdInstances[param.type];
+        }
         const implementing = this.getClassesImplementingInterface(param.type);
         if (implementing.length > 0) {
-          return await this.wireInterface(param.type);
+          return await this.autowireInterface(param.type);
         }
+        const being = this.getClassNameMetadata(param.type);
+        if (being) {
+          return await this.autowireClassData(being);
+        }
+        // global approach
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const constValue = this.registeredConstantValues[param.name];
         if (constValue) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return constValue;
         }
+        // scoped approach
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const constScopedValue =
+          this.registeredConstantValues[classData.name + "/" + param.name];
+        if (constScopedValue) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          return constScopedValue;
+        }
         throw new Error(`Cannot wire parameter ${param.name}`);
       })
     );
-    if (this.createdInstances[classData.name]) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return this.createdInstances[classData.name];
-    }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment
     const instance = new (await classData.ctor)(...params);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -105,20 +116,20 @@ export class DI {
     return instance;
   }
 
-  public async wireClass<T>(ctor: ConstructorOf<T>): Promise<T> {
+  public async autowireClass<T>(ctor: ConstructorOf<T>): Promise<T> {
     const metadata = this.getClassMetadata(ctor);
     if (!metadata) {
       throw new Error(`Metadata for class ${ctor.name} not found`);
     }
-    return this.wireClassData(metadata);
+    return this.autowireClassData(metadata);
   }
 
-  public async wireClassName<T>(name: string): Promise<T> {
+  public async autowireClassName<T>(name: string): Promise<T> {
     const metadata = this.getClassNameMetadata(name);
     if (!metadata) {
       throw new Error(`Metadata for class ${name} not found`);
     }
-    return this.wireClassData(metadata);
+    return this.autowireClassData(metadata);
   }
 
   public getClassesImplementingInterface(interfaceName: string): ClassData[] {

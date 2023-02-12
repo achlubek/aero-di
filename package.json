@@ -1,8 +1,27 @@
 {
   "name": "aero-di",
-  "version": "1.0.0",
-  "main": "dist/main.js",
+  "description": "Autowiring Dependency Injection for TypeScript",
+  "version": "1.0.7",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Adrian Chlubek",
   "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "bin": {
+    "aero-di-generate": "dist/generateReflection.js"
+  },
+  "repository": "https://github.com/achlubek/reflection-experiments",
+  "homepage": "https://github.com/achlubek/reflection-experiments",
+  "bugs": "https://github.com/achlubek/reflection-experiments/issues",
+  "keywords": [
+    "autowire",
+    "di",
+    "dependency",
+    "injection",
+    "typescript"
+  ],
   "scripts": {
     "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
     "lint:fix": "eslint --fix \"{src,test}/**/*.ts\"",
@@ -11,13 +30,15 @@
     "style:fix": "yarn prettier:fix && yarn lint:fix",
     "test": "mocha --config .mocharc.json",
     "test:coverage": "nyc --reporter=html yarn mocha",
-    "build:reflection": "yarn ts-node generateReflection.ts",
-    "build": "yarn build:reflection && yarn rimraf dist && tsc -P tsconfig.build.json && resolve-tspaths --project tsconfig.build.json",
+    "build": "yarn rimraf dist && tsc -P tsconfig.build.json && resolve-tspaths --project tsconfig.build.json",
     "start:dev": "ts-node -r dotenv/config -r tsconfig-paths/register src/main.ts",
     "start:dist": "node dist/main.js"
   },
   "dependencies": {
-    "minimatch": "^6.1.8"
+    "fast-scan-dir-recursive": "^0.0.4",
+    "minimatch": "^6.1.8",
+    "prettier": "2.*",
+    "typescript": "4.*"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.*",
@@ -37,15 +58,12 @@
     "eslint-config-prettier": "8.*",
     "eslint-plugin-import": "2.*",
     "eslint-plugin-prettier": "4.*",
-    "fast-scan-dir-recursive": "^0.0.4",
     "mocha": "10.*",
     "nyc": "15.*",
-    "prettier": "2.*",
     "resolve-tspaths": "0.*",
     "rimraf": "4.*",
     "sinon": "15.*",
     "ts-node": "10.*",
-    "tsconfig-paths": "4.*",
-    "typescript": "4.*"
+    "tsconfig-paths": "4.*"
   }
 }
