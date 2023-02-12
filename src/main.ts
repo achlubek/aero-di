@@ -1,23 +1,31 @@
-interface MyInterface {
-  name: string;
-}
-interface MyOtherInterface {
-  name: string;
+import { DI } from "@app/DI";
+import { Configuration } from "@app/infrastructure/configuration/Configuration";
+import { ConfigurationInterface } from "@app/infrastructure/configuration/ConfigurationInterface";
+import { Logger } from "@app/infrastructure/logger/Logger";
+import { LoggerInterface } from "@app/infrastructure/logger/LoggerInterface";
+
+interface TestClassInterface {
+  logger: LoggerInterface;
+  config: ConfigurationInterface;
+  testing: string;
 }
 
-class Dupa {}
+const someValue = "test123";
 
-export abstract class MyClass
-  extends Dupa
-  implements /*fuck*/ MyInterface, MyOtherInterface
-{
-  public name = "heh";
+class TestClass implements TestClassInterface {
   public constructor(
-    private readonly interestingService: MyInterface,
-    otherInterestingService: MyOtherInterface
-  ) {
-    super();
-    this.interestingService.name.toString();
-    otherInterestingService.name.toString();
-  }
+    public readonly logger: LoggerInterface,
+    public readonly config: ConfigurationInterface,
+    public readonly testing: string
+  ) {}
 }
+
+const di = new DI();
+di.registerValue("testing", someValue);
+di.register(TestClass);
+di.register(Configuration);
+di.register(Logger);
+
+const testResolved = di.wireInterface<TestClassInterface>("TestClassInterface");
+
+console.log(testResolved);

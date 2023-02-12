@@ -183,14 +183,11 @@ const determineType = (node: ts.Node): string => {
 
 const recurseiveDebug = (node: ts.Node, level: number, maxLevel: number) => {
   const levelstr = initArray(level, () => "-").join("");
-
   const type = determineType(node);
 
-  //if (type !== "Unknown") {
   console.log(
     `${levelstr} ${node.constructor.name}/${type}: ${node.getText()}`
   );
-  // }
   if (level < maxLevel) {
     node.getChildren().forEach((n) => recurseiveDebug(n, level + 1, maxLevel));
   }

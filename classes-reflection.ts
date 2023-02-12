@@ -12,30 +12,11 @@ export interface ClassData {
 
 export const classesReflection: ClassData[] = [
   {
-    "fqcn": "src/main/Dupa",
-    "name": "Dupa",
+    "fqcn": "src/DI/DI",
+    "name": "DI",
     "extendsClass": null,
     "implementsInterfaces": [],
     "constructorParameters": []
-  },
-  {
-    "fqcn": "src/main/MyClass",
-    "name": "MyClass",
-    "extendsClass": "Dupa",
-    "implementsInterfaces": [
-      "MyInterface",
-      "MyOtherInterface"
-    ],
-    "constructorParameters": [
-      {
-        "name": "interestingService",
-        "type": "MyInterface"
-      },
-      {
-        "name": "otherInterestingService",
-        "type": "MyOtherInterface"
-      }
-    ]
   },
   {
     "fqcn": "src/infrastructure/configuration/Configuration/Configuration",
@@ -62,8 +43,30 @@ export const classesReflection: ClassData[] = [
     ],
     "constructorParameters": [
       {
-        "name": "level",
-        "type": "LogLevel"
+        "name": "config",
+        "type": "ConfigurationInterface"
+      }
+    ]
+  },
+  {
+    "fqcn": "src/main/TestClass",
+    "name": "TestClass",
+    "extendsClass": null,
+    "implementsInterfaces": [
+      "TestClassInterface"
+    ],
+    "constructorParameters": [
+      {
+        "name": "logger",
+        "type": "LoggerInterface"
+      },
+      {
+        "name": "config",
+        "type": "ConfigurationInterface"
+      },
+      {
+        "name": "testing",
+        "type": "public readonly"
       }
     ]
   }

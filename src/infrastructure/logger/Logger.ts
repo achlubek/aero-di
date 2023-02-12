@@ -1,3 +1,4 @@
+import { ConfigurationInterface } from "@app/infrastructure/configuration/ConfigurationInterface";
 import {
   LogLevel,
   LoggerInterface,
@@ -9,9 +10,11 @@ class InvalidLogLevelException extends Error {}
 export class Logger implements LoggerInterface {
   private effectiveLogLevels: string[];
 
-  public constructor(level: LogLevel) {
-    this.effectiveLogLevels = Logger.getEffectiveLogLevels(level);
-    this.debug(this, `Current log level: ${level}`);
+  public constructor(config: ConfigurationInterface) {
+    this.effectiveLogLevels = Logger.getEffectiveLogLevels(
+      config.getLogLevel()
+    );
+    this.debug(this, `Current log level: ${config.getLogLevel()}`);
   }
 
   public error<T>(source: T, message: string): void {
