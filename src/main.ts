@@ -1,5 +1,7 @@
 import { DI } from "@app/DI";
+import { classesReflection } from "@app/classesReflection";
 import { ConfigurationInterface } from "@app/infrastructure/configuration/ConfigurationInterface";
+import { Logger } from "@app/infrastructure/logger/Logger";
 import { LoggerInterface } from "@app/infrastructure/logger/LoggerInterface";
 
 interface TestClassInterface {
@@ -19,14 +21,15 @@ export class TestClass implements TestClassInterface {
 }
 
 async function main(): Promise<void> {
-  const di = new DI();
+  const di = new DI(classesReflection);
   di.registerValue("testing", someValue);
   await di.registerByFqcnGlob("**/*");
 
-  const testResolved =
-    di.wireInterface<TestClassInterface>("TestClassInterface");
+  const testResolved = await di.wireInterface<TestClassInterface>(
+    "TestClassInterface"
+  );
 
-  const logger = di.wireInterface<LoggerInterface>("LoggerInterface");
+  const logger = await di.wireClass(Logger);
 
   logger.info(main, JSON.stringify(testResolved, undefined, 2));
 }
