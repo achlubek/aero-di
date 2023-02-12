@@ -423,26 +423,6 @@
     javascript-natural-sort "0.7.1"
     lodash "4.17.21"
 
-"@ts-nameof/common@^4.2.0":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@ts-nameof/common/-/common-4.2.1.tgz#76e6ab5b4a11c92b2a2a79bf133ae49b57d7efc3"
-  integrity sha512-bWwYOFTTd6Nq7RUqJalIii1su3OyR+N1W0smp5PzHGUVycHuJ7MRiyCQrWgMt1lbbp3GY6cvCttm7Zo5E7A1xQ==
-
-"@ts-nameof/transforms-common@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@ts-nameof/transforms-common/-/transforms-common-4.2.1.tgz#a38c18ef62f921ffcea7b4a9a693cb63301e23d3"
-  integrity sha512-mg6nkkHqNlKU1B15pEtiikSKadJSOxFFWpi7tEVB7Yhjx0PhoTcSe7oxK0fXHZGeoTGF2SMZjmCsGnbtfcgk6w==
-  dependencies:
-    "@ts-nameof/common" "^4.2.0"
-
-"@ts-nameof/transforms-ts@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@ts-nameof/transforms-ts/-/transforms-ts-4.2.1.tgz#a37921017694b75a3bc17fa6519408ee32298efd"
-  integrity sha512-/zI2+DEQ1wvM0UQY5znG4efGbNSyBp+h4pzQZssGcst1748Np92RCWUnGfyV1qDlpIVma4S8Rx5HgkoDLPfMMg==
-  dependencies:
-    "@ts-nameof/common" "^4.2.0"
-    "@ts-nameof/transforms-common" "^4.2.1"
-
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
@@ -2098,6 +2078,13 @@ minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   dependencies:
     brace-expansion "^1.1.7"
 
+minimatch@^6.1.8:
+  version "6.1.8"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-6.1.8.tgz#5a0ea694ca41342e14561bbec62802b59509f7e4"
+  integrity sha512-sTvS8Q4mIZiSnMo9192lZMxfeaGCslH5CC7B62hd9DlbifUVrc02ABTeRJINPosxKnvZlrmAaNSo8f4PZqDDdw==
+  dependencies:
+    brace-expansion "^2.0.1"
+
 minimist@^1.2.0, minimist@^1.2.6:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.7.tgz#daa1c4d91f507390437c6a8bc01078e7000c4d18"
@@ -2714,15 +2701,6 @@ to-regex-range@^5.0.1:
   integrity sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==
   dependencies:
     is-number "^7.0.0"
-
-ts-nameof@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ts-nameof/-/ts-nameof-5.0.0.tgz#9ef33e9eeb4e0bf405073be35cf91ddf8952ac62"
-  integrity sha512-KKebM+HvZdtiFLVUtkvTmlJNzmMPMMwzw7yCcTCA5XRmwDupX/JuPEfnXYpu/Bfb8d+voF1ih2fdizqgKSIO+g==
-  dependencies:
-    "@ts-nameof/common" "^4.2.0"
-    "@ts-nameof/transforms-ts" "^4.2.1"
-    glob "^7.1.6"
 
 ts-node@10.*:
   version "10.9.1"

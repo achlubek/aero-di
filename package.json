@@ -17,6 +17,7 @@
     "start:dist": "node dist/main.js"
   },
   "dependencies": {
+    "minimatch": "^6.1.8"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.*",

@@ -244,6 +244,10 @@ interface ClassData {
   constructorParameters: ParameterData[];
 }
 
+export const isClassExported = (classNode: ts.Node): boolean => {
+  return classNode.getChildAt(0).getText() === "export";
+};
+
 export const extractClass = (
   src: ts.SourceFile,
   classNode: ts.Node
@@ -307,14 +311,37 @@ export const extractClass = (
 };
 
 const formatAndSave = (classes: ClassData[]): void => {
-  const json = JSON.stringify(classes, undefined, 2);
+  const jsons = classes.map((c) => {
+    const path = c.fqcn.replace(new RegExp("/" + c.name + "$"), "");
+    const importStr = `new Promise((r) => void import("./${path}").then((imp) => r(imp.${c.name})))`;
+    return `  {
+    fqcn: "${c.fqcn}",
+    name: "${c.name}",
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    ctor: ${importStr},
+    implementsInterfaces: ["${c.implementsInterfaces.join(", ")}"],
+    extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
+    constructorParameters: ${JSON.stringify(
+      c.constructorParameters,
+      undefined,
+      2
+    )},
+  }
+  `;
+  });
+  const json = `[
+${jsons.join(",")}]`;
+
   const dataType = `export interface ParameterData {
   name: string;
   type: string;
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor = new (...args: any[]) => any;
 export interface ClassData {
   fqcn: string;
   name: string;
+  ctor: Promise<Constructor>;
   implementsInterfaces: string[];
   extendsClass: string | null;
   constructorParameters: ParameterData[];
@@ -330,7 +357,7 @@ export default function (_: ts.Program, _eh: {}) {
   return (ctx: ts.TransformationContext) => {
     return (sourceFile: ts.SourceFile) => {
       function visitor(node: ts.Node): ts.Node {
-        if (ts.isClassDeclaration(node)) {
+        if (ts.isClassDeclaration(node) && isClassExported(node)) {
           classes.push(extractClass(sourceFile, node));
           formatAndSave(classes); // excessive, but a quick fix
         }

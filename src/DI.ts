@@ -1,3 +1,7 @@
+import minimatch from "minimatch";
+
+import { classesReflection } from "../classes-reflection";
+
 import {
   getClassMetadata,
   getClassesImplementingInterface,
@@ -12,6 +16,14 @@ export class DI {
   private readonly createdInstances: Record<string, any> = {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly registeredConstantValues: Record<string, any> = {};
+
+  public async registerByFqcnGlob(glob: string): Promise<void> {
+    for (const classData of classesReflection) {
+      if (minimatch(classData.fqcn, glob)) {
+        this.register(await classData.ctor);
+      }
+    }
+  }
 
   public register(classConstructor: Constructor): void {
     this.registeredConstructors.push(classConstructor);
