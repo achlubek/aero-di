@@ -232,21 +232,42 @@ const extractParameter = (paramNode: ts.Node): ParameterData => {
   const identifiers = children.filter(
     (n) => n.constructor.name === "IdentifierObject"
   );
-  const nodeTrees = children.filter((n) => n.constructor.name === "NodeObject");
   const firstIdentifier = identifiers[0];
-  const lastNode =
-    nodeTrees[nodeTrees.length - 1] ?? children[children.length - 1];
+
+  const typeReferences = children.filter((n) => ts.isTypeReferenceNode(n));
+
+  let typeTest = "";
+  if (typeReferences.length > 0) {
+    typeTest = typeReferences[0].getText().trim();
+  } else {
+    typeTest = children[children.length - 1].getText().trim();
+  }
+
   return {
     name: firstIdentifier.getText(),
-    type: lastNode.getText(),
+    type: typeTest,
   };
 };
 
+interface ConstructorData {
+  visibility: "public" | "protected" | "private";
+  params: ParameterData[];
+}
+
 export const extractConstructor = (
   constructorNode: ts.Node
-): ParameterData[] => {
+): ConstructorData => {
   const params = extractParameterNodes(constructorNode);
-  return params.map((param) => extractParameter(param));
+
+  let visibility: "public" | "protected" | "private" = "public";
+  const maybeVisibilityString = constructorNode.getChildAt(0).getText().trim();
+  if (maybeVisibilityString.startsWith("private")) {
+    visibility = "private";
+  } else if (maybeVisibilityString.startsWith("protected")) {
+    visibility = "protected";
+  }
+
+  return { visibility, params: params.map((param) => extractParameter(param)) };
 };
 
 interface ClassData {
@@ -254,6 +275,7 @@ interface ClassData {
   name: string;
   implementsInterfaces: string[];
   extendsClass: string | null;
+  constructorVisibility: "public" | "protected" | "private";
   constructorParameters: ParameterData[];
 }
 
@@ -311,9 +333,13 @@ export const extractClass = (
     ts.isConstructorDeclaration(n)
   );
 
+  // by default is public even if is not specified
+  let constructorVisibility: "public" | "protected" | "private" = "public";
   const constructorParameters: ParameterData[] = [];
   if (childConstructor) {
-    constructorParameters.push(...extractConstructor(childConstructor));
+    const constructorData = extractConstructor(childConstructor);
+    constructorParameters.push(...constructorData.params);
+    constructorVisibility = constructorData.visibility;
   }
 
   // eslint-disable-next-line no-console
@@ -325,6 +351,7 @@ export const extractClass = (
     extendsClass,
     implementsInterfaces,
     constructorParameters,
+    constructorVisibility,
   };
 };
 
@@ -340,9 +367,10 @@ const formatAndSave = async (
       fqcn: "${c.fqcn}",
       name: "${c.name}",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      ctor: ${importStr},
+      ctor: ${c.constructorVisibility === "public" ? importStr : "null"},
       implementsInterfaces: ${JSON.stringify(c.implementsInterfaces)},
       extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
+      constructorVisibility: "${c.constructorVisibility}",
       constructorParameters: ${JSON.stringify(c.constructorParameters)},
     }`;
   });
@@ -359,10 +387,11 @@ const formatAndSave = async (
     export interface ClassData {
       fqcn: string;
       name: string;
-      ctor: Promise<Constructor>;
+      ctor: Promise<Constructor> | null;
       implementsInterfaces: string[];
       extendsClass: string | null;
       constructorParameters: ParameterData[];
+      constructorVisibility: "public" | "protected" | "private";
     }`;
 
   const warning =
