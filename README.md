@@ -71,8 +71,8 @@ const myInstance = await di.getByInterface<ServiceInterface>("ServiceInterface")
 Available options (shortcut provided in parentheses):
 * --baseDir (-b) - base directory to recursively search for source files
 * --outFile (-o) - default: `reflectionData.ts` - file name to save reflection data to - it will be stored in baseDir
-* --includeGlob (-i) - default: **`**/*.ts**` - glob for matching files, only files passing this glob will be analyzed
-* --excludeGlob (-e) - default: **`**/*.spec.ts`** - glob for excluding files, files matched by this glob will not be analyzed
+* --includeGlob (-i) - default: `**/*.ts` - glob for matching files, only files passing this glob will be analyzed
+* --excludeGlob (-e) - default: `**/*.spec.ts` - glob for excluding files, files matched by this glob will not be analyzed
 * --verbose (-v) - default: `false` -  if used, information about analysis process will be printed
 
 The file that is generated is not intended to be changed, but feel free to use it!
