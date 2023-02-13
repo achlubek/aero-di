@@ -2,7 +2,6 @@
 Automatic, no decorators, dependency injection library for your Typescript project.
 
 ## Key features:
-- TypeScript 5 ready
 - No decorators - completely no decorators whatsoever!
 - Transparent - no changes to your code
 - Automatically finds suitable implementation for interfaces by name
