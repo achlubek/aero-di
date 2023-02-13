@@ -287,7 +287,8 @@ export const isClassExported = (classNode: ts.Node): boolean => {
 export const extractClass = (
   baseDir: string,
   src: ts.SourceFile,
-  classNode: ts.Node
+  classNode: ts.Node,
+  verbose: boolean
 ): ClassData => {
   const children = classNode.getChildren();
   const identifiers = children.filter((n) => ts.isIdentifier(n));
@@ -342,8 +343,10 @@ export const extractClass = (
     constructorVisibility = constructorData.visibility;
   }
 
-  // eslint-disable-next-line no-console
-  console.log(`Found class ${fqcn}`);
+  if (verbose) {
+    // eslint-disable-next-line no-console
+    console.log(`Found class ${name}`);
+  }
 
   return {
     fqcn,
@@ -422,32 +425,38 @@ async function generateReflectionData(
   baseDir: string,
   outFile: string,
   includeGlob: string,
-  excludeGlob: string
+  excludeGlob: string,
+  verbose: boolean
 ): Promise<void> {
   const filesAll = await scan(baseDir);
   const files = filesAll
     .map((file) => file.replaceAll("\\", "/"))
     .filter((file) => minimatch(file, includeGlob))
     .filter((file) => !minimatch(file, excludeGlob))
-    .map((file) => "./" + path.relative(baseDir, file))
-    .map((file) => file.replaceAll("\\", "/"));
+    .map((file) => "./" + path.relative(baseDir, file).replaceAll("\\", "/"));
   process.chdir(baseDir);
   const program = ts.createProgram(files, {});
   program.getTypeChecker();
   const sourceFiles = program.getSourceFiles();
   const classes: ClassData[] = [];
-  for (const sourceFile of sourceFiles) {
-    const filePath = sourceFile.fileName;
-    if (
-      !sourceFile.isDeclarationFile &&
-      minimatch(filePath, includeGlob) &&
-      !minimatch(filePath, excludeGlob)
-    ) {
-      // eslint-disable-next-line no-console
-      console.log(`Analyzing file ${filePath}`);
+  for (const filePath of files) {
+    const sourceFile = sourceFiles.find(
+      (s) =>
+        "./" + path.relative(baseDir, s.fileName).replaceAll("\\", "/") ===
+        filePath
+    );
+    if (sourceFile && !sourceFile.isDeclarationFile) {
+      if (verbose) {
+        // eslint-disable-next-line no-console
+        console.log(`Analyzing file ${filePath}`);
+      }
       const visitor = (node: ts.Node): void => {
         if (ts.isClassDeclaration(node) && isClassExported(node)) {
-          classes.push(extractClass(baseDir, sourceFile, node));
+          const classData = extractClass(baseDir, sourceFile, node, verbose);
+          if (classes.some((c) => c.name === classData.name)) {
+            throw new Error(`Duplicate class name ${classData.name}`);
+          }
+          classes.push(classData);
         }
         ts.forEachChild(node, visitor);
       };
@@ -460,66 +469,73 @@ async function generateReflectionData(
 const options = {
   baseDir: {
     type: "string" as "string" | "boolean",
-    short: "d",
+    short: "b",
   },
   outFile: {
     type: "string" as "string" | "boolean",
     short: "o",
+    default: "reflectionData.ts",
   },
   includeGlob: {
     type: "string" as "string" | "boolean",
     short: "i",
+    default: "**/*.ts",
   },
   excludeGlob: {
     type: "string" as "string" | "boolean",
     short: "e",
+    default: "**/*.spec.ts",
+  },
+  verbose: {
+    type: "boolean" as "string" | "boolean",
+    short: "v",
+    default: false,
   },
 };
 
-let baseDir = "";
-let outFile = "";
-let includeGlob = "";
-let excludeGlob = "";
+const helpMessage = `Usage help for Aero-DI reflection generation tool:
+Available options (shortcut provided in parentheses):
+
+--baseDir (-b) - base directory to recursively search for source files
+--outFile (-o) - default: reflectionData.ts - file name to save reflection data to - it will be stored in baseDir
+--includeGlob (-i) - default: **/*.ts - glob for matching files, only files passing this glob will be analyzed
+--excludeGlob (-e) - default: **/*.spec.ts - glob for excluding files, files matched by this glob will not be analyzed
+--verbose (-v) - default: false -  if used, information about analysis process will be printed
+
+The file that is generated is not intended to be changed, but feel free to use it!
+
+Example usage:
+aero-di-generate --baseDir=src --outFile=gen.ts --includeGlob="**/*.ts" --excludeGlob="**/*.spec.ts"
+aero-di-generate -b=src
+`;
 
 try {
   const { values } = parseArgs({
     options,
   });
-  baseDir = path.resolve(values.baseDir as string);
-  outFile = values.outFile as string;
-  includeGlob = values.includeGlob as string;
-  excludeGlob = values.excludeGlob as string;
-  if (!baseDir) {
-    throw new Error(`Base directory argument missing`);
-  }
-  if (!outFile) {
-    throw new Error(`Out file argument missing`);
-  }
-  if (!includeGlob) {
-    throw new Error(`Include glob matcher argument missing`);
-  }
-  if (!excludeGlob) {
-    throw new Error(`Exclude glob matcher argument missing`);
-  }
+  const baseDir = path.resolve(values.baseDir as string);
+  const outFile = values.outFile as string;
+  const includeGlob = values.includeGlob as string;
+  const excludeGlob = values.excludeGlob as string;
+  const verbose = values.verbose as boolean;
   if (!fs.existsSync(baseDir)) {
     throw new Error(`Base directory ${baseDir} does not exist`);
   }
   // eslint-disable-next-line no-console
-  console.log({
+  console.log(`Generating reflection to ${outFile} for directory ${baseDir}`);
+  void generateReflectionData(
     baseDir,
     outFile,
     includeGlob,
     excludeGlob,
-  });
-  void generateReflectionData(baseDir, outFile, includeGlob, excludeGlob);
+    verbose
+  );
 } catch (e) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   // eslint-disable-next-line no-console
   console.error(e.message);
   // eslint-disable-next-line no-console
-  console.log(
-    `Usage example: aero-gen --baseDir=/home/code --outFile=generated.ts --includeGlob="**/*.spec.ts" --excludeGlob="**/*.spec.ts"`
-  );
+  console.log(helpMessage);
   process.exit(1);
 }

@@ -157,27 +157,7 @@ export class AeroDI {
     param: ParameterData
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
-    if (this.createdInstances[param.type]) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return this.createdInstances[param.type];
-    }
-    const implementing = this.getMetadataByInterface(param.type);
-    if (implementing.length > 0) {
-      return await this.getByInterface(param.type);
-    }
-    const being = this.getMetadataByClassName(param.type);
-    if (being) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return await this.getByClassData(being);
-    }
-    // global approach
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const constValue = this.registeredConstantValues[param.name];
-    if (constValue) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return constValue;
-    }
-    // scoped approach
+    // Find scoped parameter
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constScopedValue =
       this.registeredConstantValues[classData.name + "/" + param.name];
@@ -185,6 +165,34 @@ export class AeroDI {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return constScopedValue;
     }
+
+    // Find global parameter
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const constValue = this.registeredConstantValues[param.name];
+    if (constValue) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return constValue;
+    }
+
+    // Check cache
+    if (this.createdInstances[param.type]) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return this.createdInstances[param.type];
+    }
+
+    // Check by interface
+    const implementing = this.getMetadataByInterface(param.type);
+    if (implementing.length > 0) {
+      return await this.getByInterface(param.type);
+    }
+
+    // Check by class
+    const being = this.getMetadataByClassName(param.type);
+    if (being) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return await this.getByClassData(being);
+    }
+
     throw new Error(
       `Cannot wire parameter ${param.name} of class ${classData.name}`
     );

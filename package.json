@@ -1,7 +1,7 @@
 {
   "name": "aero-di",
   "description": "Autowiring Dependency Injection for TypeScript",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Adrian Chlubek",
