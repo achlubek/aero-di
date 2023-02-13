@@ -11,7 +11,7 @@ Automatic, no decorators, dependency injection library for your Typescript proje
 - As a bonus - exposes class reflection data
 
 ## Installation
-To install, if you can use npm:
+To install, if you use npm:
 ```
 npm install aero-di
 ```
