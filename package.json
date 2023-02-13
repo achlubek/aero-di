@@ -1,7 +1,7 @@
 {
   "name": "aero-di",
   "description": "Autowiring Dependency Injection for TypeScript",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Adrian Chlubek",
@@ -12,9 +12,9 @@
   "bin": {
     "aero-di-generate": "dist/generateReflection.js"
   },
-  "repository": "https://github.com/achlubek/reflection-experiments",
-  "homepage": "https://github.com/achlubek/reflection-experiments",
-  "bugs": "https://github.com/achlubek/reflection-experiments/issues",
+  "repository": "https://github.com/achlubek/aero-di",
+  "homepage": "https://github.com/achlubek/aero-di",
+  "bugs": "https://github.com/achlubek/aero-di/issues",
   "keywords": [
     "autowire",
     "di",
