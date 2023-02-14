@@ -35,8 +35,8 @@ export class ParameterResolver {
     this.registerValueForParameterName(className + "/" + parameterName, value);
   }
 
-  public registerValueForClassAndParameterName<T>(
-    classCtor: ConstructorOf<T>,
+  public registerValueForClassAndParameterName<C, T>(
+    classCtor: ConstructorOf<C>,
     parameterName: string,
     value: T
   ): void {
