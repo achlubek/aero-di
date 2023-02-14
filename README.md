@@ -116,7 +116,7 @@ FQCN is also very useful to distinguish 2 different classes with the same name
 AeroDI will register itself in the container when initialized.
 This means that getting it's instance in a class is as simple as using it in the container:
 ```ts
-  public constructor(
+public constructor(
   private readonly di: AeroDI
 )
 ```
@@ -137,30 +137,31 @@ scanned by the reflection generator, this is not needed!
 
 ### Read class reflection
 You can get class reflection data using an instance, a constructor or a string of the class name:
+
 ```ts
-const metadataforInstance = di.getMetadataByInstance(myObj);
-const metadataforClass = di.getMetadataByClass(MyInstance);
-const metadataforClassName = di.getMetadataByClassName("MyInstance");
+const metadataforInstance = di.metadataProvider.getMetadataByInstance(myObj);
+const metadataforClass = di.metadataProvider.getMetadataByClass(MyInstance);
+const metadataforClassName = di.metadataProvider.getMetadataByClassName("MyInstance");
 ```
 
 ### Get classes implementing an interface
 You can get class reflection data of classes implementing an interface like that:
 ```ts
-const metadatas = di.getMetadataByInterface("MyInterface");
+const metadatas = di.metadataProvider.getMetadataByInterface("MyInterface");
 ```
 
 ### Register a global parameter
 You can set up a global parameter that will be always injected if a parameter name is the same in any class constructor
 ```ts
-di.registerValueForParameterName("hostname", "127.0.0.1");
+di.parameterResolver.registerValueForParameterName("hostname", "127.0.0.1");
 ```
 
 ### Register a scoped parameter
 You can also set up a parameter that works like the global one, but only for one class.
 You can do it by class name or class constructor
 ```ts
-di.registerValueForClassAndParameterName(MyInstance, "hostname", "127.0.0.1");
-di.registerValueForClassNameAndParameterName("MyInstance", "hostname", "127.0.0.1");
+di.parameterResolver.registerValueForClassAndParameterName(MyInstance, "hostname", "127.0.0.1");
+di.parameterResolver.registerValueForClassNameAndParameterName("MyInstance", "hostname", "127.0.0.1");
 ```
 
 ### Create multiple containers
