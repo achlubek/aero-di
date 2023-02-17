@@ -1,6 +1,12 @@
 import { AeroDI } from "@app/di/AeroDI";
 import { MetadataProvider } from "@app/di/MetadataProvider";
 import {
+  ParameterTypeMultipleClassChildrenFoundException,
+  ParameterTypeMultipleInterfaceImplementationsFoundException,
+  ParameterTypesIncompatibleException,
+  ValueForParameterNotFoundException,
+} from "@app/di/exceptions/AeroDIExceptions";
+import {
   ClassData,
   ConstructorOf,
   ParameterData,
@@ -79,24 +85,31 @@ export class ParameterResolver {
   ): void {
     if (typeof actualParamValue === "object") {
       const paramObj = actualParamValue as object;
-      const paramObjMetadata =
-        this.metadataProvider.getMetadataByInstance(paramObj);
+      const paramObjMetadata = this.metadataProvider.getByClassName(
+        paramObj.constructor.name
+      );
       if (paramObjMetadata) {
         const implementsInterface = paramObjMetadata.implementsInterfaces.some(
           (inter) => inter === expectedParamType
         );
         const isOfType = paramObj.constructor.name === expectedParamType;
         if (!isOfType && !implementsInterface) {
-          throw new Error(
-            `Cannot wire parameter ${parameterName} of class ${className}: Incompatible types: expected ${expectedParamType} but got ${paramObj.constructor.name}`
+          throw new ParameterTypesIncompatibleException(
+            className,
+            parameterName,
+            expectedParamType,
+            paramObj.constructor.name
           );
         }
       }
     } else {
       const paramTypeof = typeof actualParamValue;
       if (paramTypeof !== expectedParamType) {
-        throw new Error(
-          `Cannot wire parameter ${parameterName} of class ${className}: Incompatible types: expected ${expectedParamType} but got ${paramTypeof}`
+        throw new ParameterTypesIncompatibleException(
+          className,
+          parameterName,
+          expectedParamType,
+          paramTypeof
         );
       }
     }
@@ -124,22 +137,37 @@ export class ParameterResolver {
     }
 
     // Check by interface
-    const implementing = this.metadataProvider.getMetadataByInterface(
-      param.type
-    );
-    if (implementing.length > 0) {
+    const implementing = this.metadataProvider.getByInterface(param.type);
+    if (implementing.length === 1) {
       return await this.di.getByClassData(implementing[0]);
+    } else if (implementing.length > 1) {
+      throw new ParameterTypeMultipleInterfaceImplementationsFoundException(
+        classData.name,
+        param.name,
+        param.type
+      );
     }
 
     // Check by class
-    const being = this.metadataProvider.getMetadataByClassName(param.type);
+    const being = this.metadataProvider.getByClassName(param.type);
     if (being) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return await this.di.getByClassData(being);
     }
 
-    throw new Error(
-      `Cannot wire parameter ${param.name} of class ${classData.name}`
-    );
+    // Check by extends class
+    const extend = this.metadataProvider.getByParentClassName(param.type);
+    if (extend.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return await this.di.getByClassData(extend[0]);
+    } else if (extend.length > 1) {
+      throw new ParameterTypeMultipleClassChildrenFoundException(
+        classData.name,
+        param.name,
+        param.type
+      );
+    }
+
+    throw new ValueForParameterNotFoundException(param.name, classData.name);
   }
 }

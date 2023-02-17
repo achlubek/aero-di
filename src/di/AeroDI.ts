@@ -1,6 +1,14 @@
 import { InstancesCache } from "@app/di/InstancesCache";
 import { MetadataProvider } from "@app/di/MetadataProvider";
 import { ParameterResolver } from "@app/di/ParameterResolver";
+import {
+  ClassConstructorNotPublicException,
+  ClassMetadataNotFoundException,
+  MultipleClassChildrenFoundException,
+  MultipleInterfaceImplementationsFoundException,
+  NoClassChildrenFoundException,
+  NoInterfaceImplementationsFoundException,
+} from "@app/di/exceptions/AeroDIExceptions";
 import { ClassData, ConstructorOf } from "@app/reflection/dataInterfaces";
 
 export class AeroDI {
@@ -35,21 +43,6 @@ export class AeroDI {
     });
   }
 
-  public async getByInterface<T>(interfaceName: string): Promise<T> {
-    const implementing =
-      this.metadataProvider.getMetadataByInterface(interfaceName);
-    if (implementing.length === 0) {
-      throw new Error(`No implementations for interface ${interfaceName}`);
-    }
-    if (implementing.length !== 1) {
-      throw new Error(
-        `Multiple implementations for interface ${interfaceName}`
-      );
-    }
-    const classData = implementing[0];
-    return this.getByClassData<T>(classData);
-  }
-
   public async getByClassData<T>(classData: ClassData): Promise<T> {
     if (this.instancesCache.get(classData.name)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -58,7 +51,7 @@ export class AeroDI {
     const params = await this.parameterResolver.resolveParameters(classData);
     const constructorFunction = await classData.ctor;
     if (!constructorFunction) {
-      throw new Error(`Constructor for class ${classData.name} is not public`);
+      throw new ClassConstructorNotPublicException(classData.name);
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment
     const instance = new constructorFunction(...params);
@@ -68,19 +61,43 @@ export class AeroDI {
     return instance;
   }
 
-  public async getByClass<T>(ctor: ConstructorOf<T>): Promise<T> {
-    const metadata = this.metadataProvider.getMetadataByClass(ctor);
+  public async getByInterface<T>(interfaceName: string): Promise<T> {
+    const implementing = this.metadataProvider.getByInterface(interfaceName);
+    if (implementing.length === 0) {
+      throw new NoInterfaceImplementationsFoundException(interfaceName);
+    }
+    if (implementing.length !== 1) {
+      throw new MultipleInterfaceImplementationsFoundException(interfaceName);
+    }
+    const classData = implementing[0];
+    return this.getByClassData<T>(classData);
+  }
+
+  public async getByClassName<T>(className: string): Promise<T> {
+    const metadata = this.metadataProvider.getByClassName(className);
     if (!metadata) {
-      throw new Error(`Metadata for class ${ctor.name} not found`);
+      throw new ClassMetadataNotFoundException(className);
     }
     return this.getByClassData(metadata);
   }
 
-  public async getByClassName<T>(name: string): Promise<T> {
-    const metadata = this.metadataProvider.getMetadataByClassName(name);
-    if (!metadata) {
-      throw new Error(`Metadata for class ${name} not found`);
+  public async getByClass<T>(ctor: ConstructorOf<T>): Promise<T> {
+    return this.getByClassName(ctor.name);
+  }
+
+  public async getByParentClassName<T>(name: string): Promise<T> {
+    const extending = this.metadataProvider.getByParentClassName(name);
+    if (extending.length === 0) {
+      throw new NoClassChildrenFoundException(name);
     }
-    return this.getByClassData(metadata);
+    if (extending.length !== 1) {
+      throw new MultipleClassChildrenFoundException(name);
+    }
+    const classData = extending[0];
+    return this.getByClassData<T>(classData);
+  }
+
+  public async getByParentClass<T>(ctor: ConstructorOf<T>): Promise<T> {
+    return this.getByParentClassName(ctor.name);
   }
 }

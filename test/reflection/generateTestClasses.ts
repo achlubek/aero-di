@@ -1,24 +1,7 @@
-// i think this needs to be code generated because it is INSANE to build it like that
-
-/*possibilities variables:
-
-- constructor visibility:
-  - private
-  - protected
-  - public
-  - not specified implied public
-
---
-
-
-
- */
-// Also generate to separate files but ALSO to a one big file to check both
 import { scan } from "fast-scan-dir-recursive";
 import * as fs from "fs";
 import * as path from "path";
 
-//import * as path from "path";
 import { ClassData, ParameterData } from "@app/reflection/dataInterfaces";
 
 enum ConstructorVisibilityEnum {
@@ -92,125 +75,113 @@ const allInOne: string[] = [];
 
 const expectedDatas: Record<string, ClassData | undefined> = {};
 const expectedDatasAllInOne: Record<string, ClassData | undefined> = {};
-/*
-{
-    fqcn: "reflection/testClasses/SingleClassNoConstructor/SingleClassNoConstructor",
-    name: "SingleClassNoConstructor",
-    extendsClass: null,
-    implementsInterfaces: [],
-    constructorParameters: [],
-    constructorVisibility: "public",
-    ctor: null,
-}
- */
 
 const toSave: [string, string][] = [];
 
-for (const constructorVisibility of constructorVisibilities) {
-  for (const numberOfConstructorParameters of numberOfConstructorParametersArr) {
-    for (const numberOfConstructorOverloads of numberOfConstructorOverloadsArr) {
-      for (const constructorParamFieldType of constructorParamFieldTypeArr) {
-        for (const implementssa of implementsArr) {
-          for (const extendssa of extendsArr) {
-            for (const basePathDir of basePathDirs) {
-              const realPath = path.resolve(
-                path.join(__dirname, `/${basePathDir}`)
-              );
-              if (!fs.existsSync(realPath)) {
-                fs.mkdirSync(realPath, { recursive: true });
-              }
-
-              const className = `${basePathDir.replaceAll(
-                "/",
-                "_"
-              )}_${constructorParamFieldType}_${
-                extendssa?.replaceAll(/[<>]/g, "x") ?? "undefined"
-              }${(implementssa?.join("_") ?? "undefined").replaceAll(
-                /[<>]/g,
-                "x"
-              )}_${numberOfConstructorOverloads}_${numberOfConstructorParameters}_${constructorVisibility}`.replaceAll(
-                /[/ ]/g,
-                "__"
-              );
-
-              if (expectedDatas[className]) {
-                throw new Error(`conflict with ${className}`);
-              }
-
-              const fqcn = `${basePathDir}/${className}/${className}`;
-              const filename = `${realPath}/${className}.ts`;
-
-              const mainCtorParamsDatas: ParameterData[] = [];
-              for (let i = 0; i < numberOfConstructorParameters; i++) {
-                mainCtorParamsDatas.push({
-                  name: `param${i}`,
-                  type: constructorParameterTypes[i],
-                });
-              }
-              const mainCtorParamsStrings = mainCtorParamsDatas.map((p) => {
-                return `${constructorParamFieldType} ${p.name}: ${p.type}`;
-              });
-              const mainCtorParamsString = mainCtorParamsStrings.join(",\n");
-
-              const ctorVisibilityString =
-                constructorVisibilitiesStringMap[constructorVisibility];
-
-              const contructorsStrings: string[] = [];
-
-              for (let i = 0; i < numberOfConstructorOverloads; i++) {
-                contructorsStrings.push(
-                  `${ctorVisibilityString} constructor(${mainCtorParamsString});`
+const generate = (): void => {
+  for (const constructorVisibility of constructorVisibilities) {
+    for (const numberOfConstructorParameters of numberOfConstructorParametersArr) {
+      for (const numberOfConstructorOverloads of numberOfConstructorOverloadsArr) {
+        for (const constructorParamFieldType of constructorParamFieldTypeArr) {
+          for (const implementssa of implementsArr) {
+            for (const extendssa of extendsArr) {
+              for (const basePathDir of basePathDirs) {
+                const realPath = path.resolve(
+                  path.join(__dirname, `/${basePathDir}`)
                 );
-              }
-              contructorsStrings.push(
-                `${ctorVisibilityString} constructor(${mainCtorParamsString}) { }`
-              );
+                if (!fs.existsSync(realPath)) {
+                  fs.mkdirSync(realPath, { recursive: true });
+                }
 
-              const extendsString = extendssa ? `extends ${extendssa}` : "";
-              const implementsString = implementssa
-                ? `implements ${implementssa.join(", ")}`
-                : "";
+                const className = `${basePathDir.replaceAll(
+                  "/",
+                  "_"
+                )}_${constructorParamFieldType}_${
+                  extendssa?.replaceAll(/[<>]/g, "x") ?? "undefined"
+                }${(implementssa?.join("_") ?? "undefined").replaceAll(
+                  /[<>]/g,
+                  "x"
+                )}_${numberOfConstructorOverloads}_${numberOfConstructorParameters}_${constructorVisibility}`.replaceAll(
+                  /[/ ]/g,
+                  "__"
+                );
 
-              const classString = `export class ${className} ${extendsString} ${implementsString} {
+                if (expectedDatas[className]) {
+                  throw new Error(`conflict with ${className}`);
+                }
+
+                const fqcn = `${basePathDir}/${className}/${className}`;
+                const filename = `${realPath}/${className}.ts`;
+
+                const mainCtorParamsDatas: ParameterData[] = [];
+                for (let i = 0; i < numberOfConstructorParameters; i++) {
+                  mainCtorParamsDatas.push({
+                    name: `param${i}`,
+                    type: constructorParameterTypes[i],
+                  });
+                }
+                const mainCtorParamsStrings = mainCtorParamsDatas.map((p) => {
+                  return `${constructorParamFieldType} ${p.name}: ${p.type}`;
+                });
+                const mainCtorParamsString = mainCtorParamsStrings.join(",\n");
+
+                const ctorVisibilityString =
+                  constructorVisibilitiesStringMap[constructorVisibility];
+
+                const contructorsStrings: string[] = [];
+
+                for (let i = 0; i < numberOfConstructorOverloads; i++) {
+                  contructorsStrings.push(
+                    `${ctorVisibilityString} constructor(${mainCtorParamsString});`
+                  );
+                }
+                contructorsStrings.push(
+                  `${ctorVisibilityString} constructor(${mainCtorParamsString}) { }`
+                );
+
+                const extendsString = extendssa ? `extends ${extendssa}` : "";
+                const implementsString = implementssa
+                  ? `implements ${implementssa.join(", ")}`
+                  : "";
+
+                const classString = `export class ${className} ${extendsString} ${implementsString} {
                 ${contructorsStrings.join("\n")}
               }`;
-              toSave.push([filename, classString]);
-              allInOne.push(classString);
+                toSave.push([filename, classString]);
+                allInOne.push(classString);
 
-              expectedDatas[className] = {
-                constructorVisibility:
-                  constructorVisibilitiesEnumMap[constructorVisibility],
-                name: className,
-                fqcn: fqcn,
-                ctor: null,
-                constructorParameters: mainCtorParamsDatas,
-                extendsClass: extendssa ?? null,
-                implementsInterfaces: implementssa ?? [],
-              };
+                expectedDatas[className] = {
+                  constructorVisibility:
+                    constructorVisibilitiesEnumMap[constructorVisibility],
+                  name: className,
+                  fqcn: fqcn,
+                  ctor: null,
+                  constructorParameters: mainCtorParamsDatas,
+                  extendsClass: extendssa ?? null,
+                  implementsInterfaces: implementssa ?? [],
+                };
 
-              expectedDatasAllInOne[className] = {
-                constructorVisibility:
-                  constructorVisibilitiesEnumMap[constructorVisibility],
-                name: className,
-                fqcn: `allInOne/${className}`,
-                ctor: null,
-                constructorParameters: mainCtorParamsDatas,
-                extendsClass: extendssa ?? null,
-                implementsInterfaces: implementssa ?? [],
-              };
+                expectedDatasAllInOne[className] = {
+                  constructorVisibility:
+                    constructorVisibilitiesEnumMap[constructorVisibility],
+                  name: className,
+                  fqcn: `allInOne/${className}`,
+                  ctor: null,
+                  constructorParameters: mainCtorParamsDatas,
+                  extendsClass: extendssa ?? null,
+                  implementsInterfaces: implementssa ?? [],
+                };
+              }
             }
           }
         }
       }
     }
   }
-}
-
-console.log("Generated in memory, now saving...");
+};
 
 const runSave = async (): Promise<void> => {
   while (toSave.length > 0) {
-    console.log(`${toSave.length} left`);
     const chunk: [string, string][] = [];
     while (chunk.length < 1000 && toSave.length > 0) {
       const elem = toSave.shift();
@@ -227,6 +198,7 @@ const runSave = async (): Promise<void> => {
 };
 
 export const generateTestClasses = async (): Promise<void> => {
+  generate();
   fs.writeFileSync(__dirname + "/allInOne.ts", allInOne.join("\n\n"));
   fs.writeFileSync(
     __dirname + "/expected.json",

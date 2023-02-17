@@ -10,26 +10,6 @@ import { ClassData } from "@app/reflection/dataInterfaces";
 import { generateReflectionDataForFiles } from "@app/reflection/generateReflection";
 
 describe("generateReflection", () => {
-  // it("generates reflection data for a single simple class without a constructor", () => {
-  //   const generated = generateReflectionDataForFiles("test", [
-  //     "test/reflection/testClasses2/SingleClassNoConstructor.ts",
-  //   ]);
-  //
-  //   assert.lengthOf(generated, 1);
-  //
-  //   const generatedOne = generated[0];
-  //
-  //   assert.deepEqual(generatedOne, {
-  //     fqcn: "reflection/testClasses2/SingleClassNoConstructor/SingleClassNoConstructor",
-  //     name: "SingleClassNoConstructor",
-  //     extendsClass: null,
-  //     implementsInterfaces: ["Heh<T>"],
-  //     constructorParameters: [],
-  //     constructorVisibility: "public",
-  //     ctor: null,
-  //   });
-  // });
-
   before(async () => {
     await generateTestClasses();
   });
@@ -38,21 +18,18 @@ describe("generateReflection", () => {
     await cleanupTestClasses();
   });
 
-  it("checks generated files separate", async () => {
-    console.log("Parsing");
+  it("should parse generated classes in separate files", async () => {
     const filesAll = await scan("test/reflection/testClasses");
     const generatedAll = generateReflectionDataForFiles(
       "test/reflection",
       filesAll,
       { verbose: false }
     );
-    console.log("Reading expected data");
 
     const expectedAll = JSON.parse(
       fs.readFileSync("test/reflection/expected.json").toString()
     ) as Record<string, ClassData>;
 
-    console.log("Asserting");
     assert.equal(generatedAll.length, Object.keys(expectedAll).length);
 
     for (const generated of generatedAll) {
@@ -61,20 +38,17 @@ describe("generateReflection", () => {
     }
   });
 
-  it("checks generated files all in one", async () => {
-    console.log("Parsing");
+  it("should parse generated classes all in one file", () => {
     const generatedAll = generateReflectionDataForFiles(
       "test/reflection",
       ["test/reflection/allInOne.ts"],
       { verbose: false }
     );
-    console.log("Reading expected data");
 
     const expectedAll = JSON.parse(
       fs.readFileSync("test/reflection/expectedAllInOne.json").toString()
     ) as Record<string, ClassData>;
 
-    console.log("Asserting");
     assert.equal(generatedAll.length, Object.keys(expectedAll).length);
 
     for (const generated of generatedAll) {
