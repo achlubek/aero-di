@@ -98,7 +98,30 @@ export class ParameterResolver {
             className,
             parameterName,
             expectedParamType,
-            paramObj.constructor.name
+            paramObj.constructor.name,
+            "does not match the object type or interface"
+          );
+        }
+        const namesMatch = paramObj.constructor.name === paramObjMetadata.name;
+        if (!namesMatch) {
+          throw new ParameterTypesIncompatibleException(
+            className,
+            parameterName,
+            expectedParamType,
+            paramObj.constructor.name,
+            "class name in metadata is different"
+          );
+        }
+      } else {
+        // metadata not found?? awkward, maybe it came from a constant values?
+        if (!this.registeredConstantValues[parameterName]) {
+          // it did not come from constants, we need to throw
+          throw new ParameterTypesIncompatibleException(
+            className,
+            parameterName,
+            expectedParamType,
+            paramObj.constructor.name,
+            "metadata not found"
           );
         }
       }
@@ -109,7 +132,8 @@ export class ParameterResolver {
           className,
           parameterName,
           expectedParamType,
-          paramTypeof
+          paramTypeof,
+          "simple type does not match"
         );
       }
     }
@@ -156,7 +180,9 @@ export class ParameterResolver {
     }
 
     // Check by extends class
-    const extend = this.metadataProvider.getByParentClassName(param.type);
+    const extend = this.metadataProvider
+      .getByParentClassNameWithoutRoot(param.type)
+      .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (extend.length === 1) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return await this.di.getByClassData(extend[0]);

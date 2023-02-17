@@ -21,4 +21,5 @@ export interface ClassData {
   constructorVisibility: "public" | "protected" | "private";
   constructorParameters: ParameterData[];
   ctor: Promise<AnyConstructor> | null;
+  isAbstract: boolean;
 }

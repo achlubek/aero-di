@@ -3,6 +3,7 @@ import { MetadataProvider } from "@app/di/MetadataProvider";
 import { ParameterResolver } from "@app/di/ParameterResolver";
 import {
   ClassConstructorNotPublicException,
+  ClassIsAbstractException,
   ClassMetadataNotFoundException,
   MultipleClassChildrenFoundException,
   MultipleInterfaceImplementationsFoundException,
@@ -40,6 +41,7 @@ export class AeroDI {
       extendsClass: null,
       fqcn: typeName,
       implementsInterfaces: [],
+      isAbstract: false,
     });
   }
 
@@ -48,11 +50,14 @@ export class AeroDI {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return this.instancesCache.get(classData.name) as T;
     }
-    const params = await this.parameterResolver.resolveParameters(classData);
+    if (classData.isAbstract) {
+      throw new ClassIsAbstractException(classData.name);
+    }
     const constructorFunction = await classData.ctor;
     if (!constructorFunction) {
       throw new ClassConstructorNotPublicException(classData.name);
     }
+    const params = await this.parameterResolver.resolveParameters(classData);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment
     const instance = new constructorFunction(...params);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -86,7 +91,9 @@ export class AeroDI {
   }
 
   public async getByParentClassName<T>(name: string): Promise<T> {
-    const extending = this.metadataProvider.getByParentClassName(name);
+    const extending = this.metadataProvider
+      .getByParentClassNameWithoutRoot(name)
+      .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (extending.length === 0) {
       throw new NoClassChildrenFoundException(name);
     }

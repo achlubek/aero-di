@@ -14,6 +14,7 @@ describe("MetadataProvider By Name", () => {
         implementsInterfaces: [],
         constructorVisibility: "private",
         extendsClass: null,
+        isAbstract: false,
       },
       {
         name: "MyClassB",
@@ -23,6 +24,7 @@ describe("MetadataProvider By Name", () => {
         implementsInterfaces: [],
         constructorVisibility: "private",
         extendsClass: null,
+        isAbstract: false,
       },
     ];
 

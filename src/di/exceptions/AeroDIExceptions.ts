@@ -10,6 +10,12 @@ export class ClassConstructorNotPublicException extends AeroDIException {
   }
 }
 
+export class ClassIsAbstractException extends AeroDIException {
+  public constructor(subjectName: string) {
+    super(subjectName, "Class is abstract");
+  }
+}
+
 export class MultipleInterfaceImplementationsFoundException extends AeroDIException {
   public constructor(subjectName: string) {
     super(subjectName, "Multiple interface implementations found");
@@ -57,12 +63,13 @@ export class ParameterTypesIncompatibleException extends AeroDICannotWireParamet
     subjectName: string,
     parameterName: string,
     expectedType: string,
-    actualType: string
+    actualType: string,
+    additionalInfo: string
   ) {
     super(
       subjectName,
       parameterName,
-      `Expected type ${expectedType} but got ${actualType}`
+      `Expected type ${expectedType} but got ${actualType}, ${additionalInfo}`
     );
   }
 }

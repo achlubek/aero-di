@@ -4,9 +4,9 @@ import * as ts from "typescript";
 import { ClassData } from "@app/reflection/dataInterfaces";
 import { extractClass } from "@app/reflection/extractClass";
 
-export const isClassExported = (classNode: ts.Node): boolean => {
+const isClassExported = (classNode: ts.Node): boolean => {
   const chd = classNode.getChildren();
-  return chd.length > 0 && chd[0].getText() === "export";
+  return chd.length > 0 && chd[0].getText().includes("export");
 };
 
 export interface GenerateReflectionOptions {

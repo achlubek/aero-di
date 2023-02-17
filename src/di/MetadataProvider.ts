@@ -17,12 +17,21 @@ export class MetadataProvider {
 
   // by Extends
 
-  public getByParentClassName(parentClassName: string): ClassData[] {
+  public getByParentClassNameWithRoot(parentClassName: string): ClassData[] {
+    const result = this.getByParentClassNameWithoutRoot(parentClassName);
+    const root = this.getByClassName(parentClassName);
+    if (root) {
+      result.push(root);
+    }
+    return result;
+  }
+
+  public getByParentClassNameWithoutRoot(parentClassName: string): ClassData[] {
     const extendsParent = this.classesData.filter(
       (c) => c.extendsClass === parentClassName
     );
     const extendsChildren = extendsParent
-      .map((e) => this.getByParentClassName(e.name))
+      .map((e) => this.getByParentClassNameWithoutRoot(e.name))
       .flat();
     return [...extendsParent, ...extendsChildren];
   }

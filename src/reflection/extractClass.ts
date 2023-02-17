@@ -63,6 +63,11 @@ export const extractConstructor = (
   return { visibility, params: params.map((param) => extractParameter(param)) };
 };
 
+const isClassAbstract = (classNode: ts.Node): boolean => {
+  const chd = classNode.getChildren();
+  return chd.length > 0 && chd[0].getText().includes("abstract");
+};
+
 export const extractClass = (
   baseDir: string,
   src: ts.SourceFile,
@@ -77,6 +82,8 @@ export const extractClass = (
     .relative(baseDir, src.fileName)
     .replace(/.ts$/, "")
     .replaceAll("\\", "/")}/${name}`;
+
+  const isAbstract = isClassAbstract(classNode);
 
   const implementsInterfaces: string[] = [];
   let extendsClass: string | null = null;
@@ -137,5 +144,6 @@ export const extractClass = (
     constructorParameters,
     constructorVisibility,
     ctor: null,
+    isAbstract,
   };
 };

@@ -56,4 +56,21 @@ describe("generateReflection", () => {
       assert.deepEqual(generated, expected);
     }
   });
+
+  it("should parse abstract classes", async () => {
+    const filesAll = await scan("test/reflection/testClassesManual");
+    const generatedAll = generateReflectionDataForFiles(
+      "test/reflection",
+      filesAll,
+      { verbose: false }
+    );
+
+    assert.lengthOf(generatedAll, 2);
+
+    assert.isFalse(generatedAll[0].isAbstract);
+    assert.equal(generatedAll[0].name, "NonAbstractClass");
+
+    assert.isTrue(generatedAll[1].isAbstract);
+    assert.equal(generatedAll[1].name, "AbstractClass");
+  });
 });
