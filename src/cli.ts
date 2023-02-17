@@ -75,7 +75,9 @@ try {
       .filter((file) => minimatch(file, includeGlob))
       .filter((file) => !minimatch(file, excludeGlob))
       .map((file) => "./" + path.relative(baseDir, file).replaceAll("\\", "/"));
-    const classesData = generateReflectionDataForFiles(baseDir, files, { verbose });
+    const classesData = generateReflectionDataForFiles(baseDir, files, {
+      verbose,
+    });
     await formatAndSave(baseDir, outFile, classesData);
     // eslint-disable-next-line no-console
     console.log(`Done! Saved data for ${classesData.length} classes`);

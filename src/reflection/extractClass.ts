@@ -120,8 +120,8 @@ export const extractClass = (
     const constructorData = extractConstructor(
       childConstructors[childConstructors.length - 1] // last one is the implementation
     );
-    constructorParameters.push(...constructorData.params);
     constructorVisibility = constructorData.visibility;
+    constructorParameters.push(...constructorData.params);
   }
 
   if (options.verbose) {

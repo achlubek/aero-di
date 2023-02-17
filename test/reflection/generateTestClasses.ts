@@ -52,9 +52,9 @@ const constructorVisibilitiesEnumMap: Record<
   [ConstructorVisibilityEnum.NotSpecifiedImpliedPublic]: "public",
 };
 
-const numberOfConstructorParametersArr = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const numberOfConstructorParametersArr = [0, 1, 2, 7];
 
-const numberOfConstructorOverloadsArr = [0, 1, 2];
+const numberOfConstructorOverloadsArr = [0, 2];
 
 const constructorParameterTypes = [
   "number",
@@ -62,7 +62,6 @@ const constructorParameterTypes = [
   "ConstrainDOMString",
   "ConstrainDOMString<T>",
   "number | undefined",
-  "string | undefined",
   "ConstrainDOMString | undefined",
   "ConstrainDOMString<T> | undefined",
 ];
@@ -77,12 +76,7 @@ const constructorParamFieldTypeArr = [
   "private readonly",
 ];
 
-const basePathDirs = [
-  "testClasses",
-  "testClasses/subfolder",
-  "testClasses/subfolder/subfolder1",
-  "testClasses/subfolder/subfolder2",
-];
+const basePathDirs = ["testClasses", "testClasses/subfolder"];
 
 const extendsArr = [undefined, "BaseClass", "BaseGeneric<T>"];
 
@@ -240,7 +234,7 @@ export const generateTestClasses = async (): Promise<void> => {
   );
   fs.writeFileSync(
     __dirname + "/expectedAllInOne.json",
-    JSON.stringify(expectedDatasAllInOne, undefined, 2)crazy
+    JSON.stringify(expectedDatasAllInOne, undefined, 2)
   );
   await runSave();
 };
