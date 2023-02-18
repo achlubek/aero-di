@@ -20,6 +20,7 @@ export const formatAndSave = async (
       extendsClass: ${c.extendsClass ? `"${c.extendsClass}"` : "null"},
       constructorVisibility: "${c.constructorVisibility}",
       constructorParameters: ${JSON.stringify(c.constructorParameters)},
+      isAbstract: ${c.isAbstract ? "true" : "false"},
     }`;
   });
   const json = `[${jsons.join(",")}]`;
@@ -40,6 +41,7 @@ export const formatAndSave = async (
       extendsClass: string | null;
       constructorParameters: ParameterData[];
       constructorVisibility: "public" | "protected" | "private";
+      isAbstract: boolean;
     }`;
 
   const warning =

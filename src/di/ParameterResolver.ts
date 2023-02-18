@@ -215,6 +215,11 @@ export class ParameterResolver {
       );
     }
 
+    const cacheCheck = this.di.instancesCache.get(param.type);
+    if (cacheCheck) {
+      return Promise.resolve(cacheCheck as As);
+    }
+
     throw new ValueForParameterNotFoundException(param.name, classData.name);
   }
 }
