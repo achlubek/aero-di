@@ -1,10 +1,11 @@
 # Dependency Injection for Typescript
 Automatic, no decorators, dependency injection library for your Typescript project.
 
-## Key features:
+## Key features
 - No decorators - completely no decorators whatsoever!
 - Transparent - no changes to your code
 - Automatically finds suitable implementation for interfaces by name
+- Automatically finds suitable class based on a parent class
 - Autowires everything, just like in Symfony or Spring
 - Works just as fine when compiled
 - As a bonus - exposes class reflection data
@@ -67,7 +68,7 @@ You can also get an instance for an interface:
 const myInstance = await di.getByInterface<ServiceInterface>("ServiceInterface");
 ```
 
-## Reflection command detailed usage:
+## Reflection command detailed usage
 Available options (shortcut provided in parentheses):
 * --baseDir (-b) - base directory to recursively search for source files
 * --outFile (-o) - default: `reflectionData.ts` - file name to save reflection data to - it will be stored in baseDir
@@ -83,7 +84,7 @@ aero-di-generate --baseDir=src --outFile=gen.ts --includeGlob="**/*.ts" --exclud
 aero-di-generate -b=src
 ```
 
-## Advanced usage:
+## Advanced usage
 Of course the library must be able to handle a really challenging DI situations.
 
 Here is explained how to tackle most of them:
@@ -106,6 +107,7 @@ Reflection saved in the file is basically an array of objects with following int
   extendsClass: string | null; // Parent of the class - null if not extending
   constructorParameters: ParameterData[]; // Array of constructor parameters, with name and type fields
   constructorVisibility: "public" | "protected" | "private"; // Constructor visibility
+  isAbstract: boolean; // Is the class abstract or not
 ```
 Using this you can, for example, create an instance of a class by name, 
 which is useful, for example, when recreating events from the database
@@ -136,18 +138,25 @@ di.registerInstanceForTypeName("MyInstanceInterface", MyInstance)
 scanned by the reflection generator, this is not needed!
 
 ### Read class reflection
-You can get class reflection data using an instance, a constructor or a string of the class name:
+You can get class reflection data using an instance, a string of the class name, or a parent class name:
 
 ```ts
-const metadataforInstance = di.metadataProvider.getMetadataByInstance(myObj);
-const metadataforClass = di.metadataProvider.getMetadataByClass(MyInstance);
-const metadataforClassName = di.metadataProvider.getMetadataByClassName("MyInstance");
+const metadataByInstance = di.metadataProvider.getByInterface("MyInterface");
+const metadataByClassName = di.metadataProvider.getByClassName("MyClass");
+const metadataByParentClass = di.metadataProvider.getByParentClassNameWithRoot("MyBaseClass");
 ```
 
 ### Get classes implementing an interface
 You can get class reflection data of classes implementing an interface like that:
 ```ts
-const metadatas = di.metadataProvider.getMetadataByInterface("MyInterface");
+const metadatas = di.metadataProvider.getByInterface("MyInterface");
+```
+
+### Get a class hierarchy tree, based on extends
+You can get class reflection data of classes in a class hierarchy tree, based on extends like that:
+```ts
+const withRootClass = di.metadataProvider.getByParentClassNameWithRoot("MyBaseClass");
+const withoutRootClass = di.metadataProvider.getByParentClassNameWithoutRoot("MyBaseClass");
 ```
 
 ### Register a global parameter
@@ -176,14 +185,17 @@ const handlersDI = new AeroDI([...commonData, ...handlersData]);
 const servicesDI = new AeroDI([...commonData, ...servicesData]);
 ```
 
-### Parameter resolving precendence
+### Parameter resolving precedence
 Value for a parameter in a constructor is resolved in the following order:
 - Check for a scoped parameter - if found then use it
 - Check for a global parameter - if found then use it
 - Check for classes implementing used interface - if found then autowire and use it
 - Check for classes by type - if found then autowire and use it
+- Check for classes by parent tree - if found then autowire and use it
 
 If an instance for a class or interface was already initialized once
-it is cached and used again. Support for transient instances is planned in the future.
+it is cached and used again. 
+Eager loading can be accomplished by wiring desired classes just after DI was initialized.
+Support for transient instances is planned in the future.
 
 
