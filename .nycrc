@@ -3,5 +3,5 @@
   "all": true,
   "check-coverage": false,
   "include": [ "src/**/*.ts" ],
-  "exclude": [ "src/**/*.spec.ts", "src/main.ts" ]
+  "exclude": [ "src/**/*.spec.ts", "src/reflection/debug/**/*.ts" ]
 }

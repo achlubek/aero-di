@@ -1,5 +1,4 @@
 import { AeroDI } from "@app/di/AeroDI";
-import { MetadataProvider } from "@app/di/MetadataProvider";
 import {
   ParameterTypeMultipleClassChildrenFoundException,
   ParameterTypeMultipleInterfaceImplementationsFoundException,
@@ -21,10 +20,7 @@ export class ParameterResolver {
     AllowedParameterType
   > = {};
 
-  public constructor(
-    private readonly di: AeroDI,
-    private readonly metadataProvider: MetadataProvider
-  ) {}
+  public constructor(private readonly di: AeroDI) {}
 
   public registerValueForParameterName<T>(
     parameterName: string,
@@ -85,7 +81,7 @@ export class ParameterResolver {
   ): void {
     if (typeof actualParamValue === "object") {
       const paramObj = actualParamValue as object;
-      const paramObjMetadata = this.metadataProvider.getByClassName(
+      const paramObjMetadata = this.di.metadataProvider.getByClassName(
         paramObj.constructor.name
       );
       if (paramObjMetadata) {
@@ -161,7 +157,7 @@ export class ParameterResolver {
     }
 
     // Check by interface
-    const implementing = this.metadataProvider.getByInterface(param.type);
+    const implementing = this.di.metadataProvider.getByInterface(param.type);
     if (implementing.length === 1) {
       return await this.di.getByClassData(implementing[0]);
     } else if (implementing.length > 1) {
@@ -173,14 +169,14 @@ export class ParameterResolver {
     }
 
     // Check by class
-    const being = this.metadataProvider.getByClassName(param.type);
+    const being = this.di.metadataProvider.getByClassName(param.type);
     if (being) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return await this.di.getByClassData(being);
     }
 
     // Check by extends class
-    const extend = this.metadataProvider
+    const extend = this.di.metadataProvider
       .getByParentClassNameWithoutRoot(param.type)
       .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (extend.length === 1) {

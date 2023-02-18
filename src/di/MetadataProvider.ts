@@ -1,10 +1,18 @@
 import { ClassData } from "@app/reflection/dataInterfaces";
 
 export class MetadataProvider {
-  public constructor(private readonly classesData: ClassData[]) {}
+  public constructor(private classesData: ClassData[]) {}
 
   public add(...data: ClassData[]): void {
     this.classesData.push(...data);
+  }
+
+  public remove(predicate: (c: ClassData) => boolean): void {
+    this.classesData = this.classesData.filter(predicate);
+  }
+
+  public getAll(): ClassData[] {
+    return this.classesData;
   }
 
   // by Interfaces

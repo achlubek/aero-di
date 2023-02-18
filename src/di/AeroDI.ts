@@ -20,7 +20,7 @@ export class AeroDI {
   public constructor(classesData: ClassData[]) {
     this.metadataProvider = new MetadataProvider(classesData);
     this.instancesCache = new InstancesCache();
-    this.parameterResolver = new ParameterResolver(this, this.metadataProvider);
+    this.parameterResolver = new ParameterResolver(this);
     this.registerInstance(this);
   }
 
