@@ -4,7 +4,7 @@
       "files": "*.ts",
       "options": {
         "importOrderParserPlugins" : ["classProperties", "decorators-legacy", "typescript"],
-        "importOrder": ["^[./]", "^@nest/(.*)$", "^@server/(.*)$", "^@app/(.*)$"],
+        "importOrder": ["^[./]", "^@app/(.*)$"],
         "importOrderSeparation": true,
         "importOrderSortSpecifiers": true
       }
@@ -19,4 +19,7 @@
   "bracketSpacing": true,
   "arrowParens": "always",
   "endOfLine": "lf",
+  "bracketSameLine": true,
+  "quoteProps": "as-needed",
+  "proseWrap": "always"
 }

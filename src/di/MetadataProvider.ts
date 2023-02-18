@@ -1,31 +1,52 @@
-import { ClassData, ConstructorOf } from "@app/reflection/dataInterfaces";
+import { ClassData } from "@app/reflection/dataInterfaces";
 
 export class MetadataProvider {
-  public constructor(private readonly classesData: ClassData[]) {}
+  public constructor(private classesData: ClassData[]) {}
 
   public add(...data: ClassData[]): void {
     this.classesData.push(...data);
   }
 
-  public getMetadataByInterface(interfaceName: string): ClassData[] {
+  public remove(predicate: (c: ClassData) => boolean): void {
+    this.classesData = this.classesData.filter((c) => !predicate(c));
+  }
+
+  public getAll(): ClassData[] {
+    return this.classesData;
+  }
+
+  // by Interfaces
+
+  public getByInterface(interfaceName: string): ClassData[] {
     return this.classesData.filter((c) =>
       c.implementsInterfaces.some((ci) => ci === interfaceName)
     );
   }
 
-  public getMetadataByClassName(name: string): ClassData | undefined {
+  // by Extends
+
+  public getByParentClassNameWithRoot(parentClassName: string): ClassData[] {
+    const result = this.getByParentClassNameWithoutRoot(parentClassName);
+    const root = this.getByClassName(parentClassName);
+    if (root) {
+      result.push(root);
+    }
+    return result;
+  }
+
+  public getByParentClassNameWithoutRoot(parentClassName: string): ClassData[] {
+    const extendsParent = this.classesData.filter(
+      (c) => c.extendsClass === parentClassName
+    );
+    const extendsChildren = extendsParent
+      .map((e) => this.getByParentClassNameWithoutRoot(e.name))
+      .flat();
+    return [...extendsParent, ...extendsChildren];
+  }
+
+  // by Class
+
+  public getByClassName(name: string): ClassData | undefined {
     return this.classesData.find((c) => c.name === name);
-  }
-
-  public getMetadataByClass<T>(
-    classConstructor: ConstructorOf<T>
-  ): ClassData | undefined {
-    return this.classesData.find((c) => c.name === classConstructor.name);
-  }
-
-  public getMetadataByInstance<T extends object>(
-    obj: T
-  ): ClassData | undefined {
-    return this.classesData.find((c) => c.name === obj.constructor.name);
   }
 }

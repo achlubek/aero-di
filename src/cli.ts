@@ -1,13 +1,10 @@
 #!/usr/bin/env node
-import { scan } from "fast-scan-dir-recursive";
 import * as fs from "fs";
-import minimatch from "minimatch";
 import * as path from "path";
 import * as process from "process";
 import { parseArgs } from "util";
 
-import { formatAndSave } from "@app/reflection/formatAndSave";
-import { generateReflectionDataForFiles } from "@app/reflection/generateReflection";
+import { run } from "@app/cli/run";
 
 const options = {
   baseDir: {
@@ -64,23 +61,10 @@ try {
   if (!fs.existsSync(baseDir)) {
     throw new Error(`Base directory ${baseDir} does not exist`);
   }
+  process.chdir(baseDir);
   // eslint-disable-next-line no-console
   console.log(`Generating reflection to ${outFile} for directory ${baseDir}`);
-
-  const run = async (): Promise<void> => {
-    const filesAll = await scan(baseDir);
-    const files = filesAll
-      .map((file) => file.replaceAll("\\", "/"))
-      .filter((file) => minimatch(file, includeGlob))
-      .filter((file) => !minimatch(file, excludeGlob))
-      .map((file) => "./" + path.relative(baseDir, file).replaceAll("\\", "/"));
-    const classesData = generateReflectionDataForFiles(baseDir, files, verbose);
-    await formatAndSave(baseDir, outFile, classesData);
-    // eslint-disable-next-line no-console
-    console.log(`Done! Saved data for ${classesData.length} classes`);
-  };
-
-  void run();
+  void run({ baseDir, includeGlob, excludeGlob, outFile, verbose });
 } catch (e) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error

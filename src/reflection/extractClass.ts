@@ -6,6 +6,7 @@ import {
   ConstructorData,
   ParameterData,
 } from "@app/reflection/dataInterfaces";
+import { GenerateReflectionOptions } from "@app/reflection/generateReflection";
 
 const extractParameterNodes = (node: ts.Node, level: number = 0): ts.Node[] => {
   const result: ts.Node[] = [];
@@ -62,11 +63,16 @@ export const extractConstructor = (
   return { visibility, params: params.map((param) => extractParameter(param)) };
 };
 
+const isClassAbstract = (classNode: ts.Node): boolean => {
+  const chd = classNode.getChildren();
+  return chd.length > 0 && chd[0].getText().includes("abstract");
+};
+
 export const extractClass = (
   baseDir: string,
   src: ts.SourceFile,
   classNode: ts.Node,
-  verbose: boolean
+  options: GenerateReflectionOptions
 ): ClassData => {
   const children = classNode.getChildren();
   const identifiers = children.filter((n) => ts.isIdentifier(n));
@@ -76,6 +82,8 @@ export const extractClass = (
     .relative(baseDir, src.fileName)
     .replace(/.ts$/, "")
     .replaceAll("\\", "/")}/${name}`;
+
+  const isAbstract = isClassAbstract(classNode);
 
   const implementsInterfaces: string[] = [];
   let extendsClass: string | null = null;
@@ -103,25 +111,27 @@ export const extractClass = (
         .getChildren()
         .filter((n) => ts.isExpressionWithTypeArguments(n));
       implementsInterfaces.push(
-        ...interfaceTypesNodes.map((inter) => inter.getChildAt(0).getText())
+        ...interfaceTypesNodes.map((inter) => inter.getText())
       );
     }
   }
   const subChildren = children.map((c) => c.getChildren()).flat(1);
-  const childConstructor = subChildren.find((n) =>
+  const childConstructors = subChildren.filter((n) =>
     ts.isConstructorDeclaration(n)
   );
 
   // by default is public even if is not specified
   let constructorVisibility: "public" | "protected" | "private" = "public";
   const constructorParameters: ParameterData[] = [];
-  if (childConstructor) {
-    const constructorData = extractConstructor(childConstructor);
-    constructorParameters.push(...constructorData.params);
+  if (childConstructors.length > 0) {
+    const constructorData = extractConstructor(
+      childConstructors[childConstructors.length - 1] // last one is the implementation
+    );
     constructorVisibility = constructorData.visibility;
+    constructorParameters.push(...constructorData.params);
   }
 
-  if (verbose) {
+  if (options.verbose) {
     // eslint-disable-next-line no-console
     console.log(`Found class ${name}`);
   }
@@ -134,5 +144,6 @@ export const extractClass = (
     constructorParameters,
     constructorVisibility,
     ctor: null,
+    isAbstract,
   };
 };
