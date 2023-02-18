@@ -8,7 +8,7 @@ export class MetadataProvider {
   }
 
   public remove(predicate: (c: ClassData) => boolean): void {
-    this.classesData = this.classesData.filter(predicate);
+    this.classesData = this.classesData.filter((c) => !predicate(c));
   }
 
   public getAll(): ClassData[] {

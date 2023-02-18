@@ -89,7 +89,15 @@ export class ParameterResolver {
           (inter) => inter === expectedParamType
         );
         const isOfType = paramObj.constructor.name === expectedParamType;
-        if (!isOfType && !implementsInterface) {
+        const parentTree =
+          this.di.metadataProvider.getByParentClassNameWithoutRoot(
+            expectedParamType
+          );
+        const extendsType = parentTree.some(
+          (c) => c.name === paramObjMetadata.name
+        );
+
+        if (!isOfType && !implementsInterface && !extendsType) {
           throw new ParameterTypesIncompatibleException(
             className,
             parameterName,
@@ -98,19 +106,12 @@ export class ParameterResolver {
             "does not match the object type or interface"
           );
         }
-        const namesMatch = paramObj.constructor.name === paramObjMetadata.name;
-        if (!namesMatch) {
-          throw new ParameterTypesIncompatibleException(
-            className,
-            parameterName,
-            expectedParamType,
-            paramObj.constructor.name,
-            "class name in metadata is different"
-          );
-        }
       } else {
         // metadata not found?? awkward, maybe it came from a constant values?
-        if (!this.registeredConstantValues[parameterName]) {
+        if (
+          !this.registeredConstantValues[parameterName] &&
+          !this.registeredConstantValues[className + "/" + parameterName]
+        ) {
           // it did not come from constants, we need to throw
           throw new ParameterTypesIncompatibleException(
             className,
@@ -118,6 +119,24 @@ export class ParameterResolver {
             expectedParamType,
             paramObj.constructor.name,
             "metadata not found"
+          );
+        }
+        const isOfType = paramObj.constructor.name === expectedParamType;
+        const parentTree =
+          this.di.metadataProvider.getByParentClassNameWithoutRoot(
+            expectedParamType
+          );
+        const extendsType = parentTree.some(
+          (c) => c.name === paramObj.constructor.name
+        );
+
+        if (!isOfType && !extendsType) {
+          throw new ParameterTypesIncompatibleException(
+            className,
+            parameterName,
+            expectedParamType,
+            paramObj.constructor.name,
+            "does not match the object type or interface"
           );
         }
       }
@@ -157,7 +176,9 @@ export class ParameterResolver {
     }
 
     // Check by interface
-    const implementing = this.di.metadataProvider.getByInterface(param.type);
+    const implementing = this.di.metadataProvider
+      .getByInterface(param.type)
+      .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (implementing.length === 1) {
       return await this.di.getByClassData(implementing[0]);
     } else if (implementing.length > 1) {
@@ -170,7 +191,11 @@ export class ParameterResolver {
 
     // Check by class
     const being = this.di.metadataProvider.getByClassName(param.type);
-    if (being) {
+    if (
+      being &&
+      !being.isAbstract &&
+      being.constructorVisibility === "public"
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return await this.di.getByClassData(being);
     }

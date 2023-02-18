@@ -1,7 +1,7 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "check-coverage": false,
+  "check-coverage": true,
   "include": [ "src/**/*.ts" ],
-  "exclude": [ "src/**/*.spec.ts", "src/reflection/debug/**/*.ts" ]
+  "exclude": [ "src/**/*.spec.ts", "src/reflection/debug/**/*.ts", "src/cli.ts" ]
 }
