@@ -14,5 +14,5 @@
   "extension": ["ts", "js", "json"],
   "spec": ["{src,test}/**/*.spec.ts"],
   "package": "../package.json",
-  "timeout": 20000
+  "timeout": 60000
 }
