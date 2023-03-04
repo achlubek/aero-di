@@ -15,6 +15,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsClassA",
@@ -25,6 +27,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "ClassA",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsMyClassExtendsClassA",
@@ -35,6 +39,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "MyClassExtendsClassA",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsClassB",
@@ -45,6 +51,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "ClassB",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -80,6 +88,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsClassA",
@@ -90,6 +100,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "ClassA",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsMyClassExtendsClassA",
@@ -100,6 +112,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "MyClassExtendsClassA",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassExtendsClassB",
@@ -110,6 +124,8 @@ describe("MetadataProvider By Extends", () => {
         constructorVisibility: "private",
         extendsClass: "ClassB",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 

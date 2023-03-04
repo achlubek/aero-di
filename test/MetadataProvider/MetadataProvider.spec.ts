@@ -15,6 +15,8 @@ describe("MetadataProvider Common", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassB",
@@ -25,6 +27,8 @@ describe("MetadataProvider Common", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -46,6 +50,8 @@ describe("MetadataProvider Common", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassB",
@@ -56,6 +62,8 @@ describe("MetadataProvider Common", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 

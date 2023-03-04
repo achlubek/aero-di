@@ -30,9 +30,9 @@ describe("generateReflection", () => {
       fs.readFileSync("test/reflection/expected.json").toString()
     ) as Record<string, ClassData>;
 
-    assert.equal(generatedAll.length, Object.keys(expectedAll).length);
+    assert.equal(generatedAll.classes.length, Object.keys(expectedAll).length);
 
-    for (const generated of generatedAll) {
+    for (const generated of generatedAll.classes) {
       const expected = expectedAll[generated.name];
       assert.deepEqual(generated, expected);
     }
@@ -49,9 +49,9 @@ describe("generateReflection", () => {
       fs.readFileSync("test/reflection/expectedAllInOne.json").toString()
     ) as Record<string, ClassData>;
 
-    assert.equal(generatedAll.length, Object.keys(expectedAll).length);
+    assert.equal(generatedAll.classes.length, Object.keys(expectedAll).length);
 
-    for (const generated of generatedAll) {
+    for (const generated of generatedAll.classes) {
       const expected = expectedAll[generated.name];
       assert.deepEqual(generated, expected);
     }
@@ -65,12 +65,12 @@ describe("generateReflection", () => {
       { verbose: false }
     );
 
-    assert.lengthOf(generatedAll, 2);
+    assert.lengthOf(generatedAll.classes, 2);
 
-    assert.isFalse(generatedAll[0].isAbstract);
-    assert.equal(generatedAll[0].name, "NonAbstractClass");
+    assert.isFalse(generatedAll.classes[0].isAbstract);
+    assert.equal(generatedAll.classes[0].name, "NonAbstractClass");
 
-    assert.isTrue(generatedAll[1].isAbstract);
-    assert.equal(generatedAll[1].name, "AbstractClass");
+    assert.isTrue(generatedAll.classes[1].isAbstract);
+    assert.equal(generatedAll.classes[1].name, "AbstractClass");
   });
 });

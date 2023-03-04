@@ -4,7 +4,9 @@ import * as ts from "typescript";
 import {
   ClassData,
   ConstructorData,
+  MethodData,
   ParameterData,
+  PropertyData,
 } from "@app/reflection/dataInterfaces";
 import { GenerateReflectionOptions } from "@app/reflection/generateReflection";
 
@@ -43,7 +45,7 @@ const extractParameter = (paramNode: ts.Node): ParameterData => {
 
   return {
     name: firstIdentifier.getText(),
-    type: typeTest,
+    type: typeTest.replaceAll(/[\r\n ]/g, ""),
   };
 };
 
@@ -116,6 +118,96 @@ export const extractClass = (
     }
   }
   const subChildren = children.map((c) => c.getChildren()).flat(1);
+
+  const propertyDeclarations = subChildren.filter((n) =>
+    ts.isPropertyDeclaration(n)
+  );
+
+  const properties: PropertyData[] = [];
+
+  for (const s of propertyDeclarations) {
+    let visibility: "public" | "protected" | "private" = "public";
+    const maybeVisibilityString = s.getChildAt(0).getText().trim();
+    if (maybeVisibilityString.startsWith("private")) {
+      visibility = "private";
+    } else if (maybeVisibilityString.startsWith("protected")) {
+      visibility = "protected";
+    }
+
+    const children = s.getChildren();
+    const identifiers = children.filter((s) => ts.isIdentifier(s));
+    const typeSeparatorIdentifierIndex = children
+      .map((f) => f.getText())
+      .indexOf(":");
+    if (typeSeparatorIdentifierIndex >= 0 && identifiers.length > 0) {
+      const typeIdentifier = children[typeSeparatorIdentifierIndex + 1];
+      properties.push({
+        name: identifiers[0].getText(),
+        type: typeIdentifier.getText().replaceAll(/[\r\n ]/g, ""),
+        visibility,
+      });
+    }
+  }
+
+  const methodDeclarations = subChildren.filter((n) =>
+    ts.isMethodDeclaration(n)
+  );
+
+  const methods: MethodData[] = [];
+
+  for (const signature of methodDeclarations) {
+    let visibility: "public" | "protected" | "private" = "public";
+    const maybeVisibilityString = signature.getChildAt(0).getText().trim();
+    if (maybeVisibilityString.startsWith("private")) {
+      visibility = "private";
+    } else if (maybeVisibilityString.startsWith("protected")) {
+      visibility = "protected";
+    }
+
+    const children = signature.getChildren();
+    const identifiers = children.filter((s) => ts.isIdentifier(s));
+    const nodes = children.filter((s) => s.constructor.name === "NodeObject");
+    const typeSeparatorIdentifierIndex = children
+      .map((f) => f.getText())
+      .indexOf(":");
+    if (typeSeparatorIdentifierIndex >= 0 && identifiers.length > 0) {
+      const typeIdentifier = children[typeSeparatorIdentifierIndex + 1];
+      const methodName = identifiers[0].getText();
+      const methodReturnType = typeIdentifier
+        .getText()
+        .trim()
+        .replaceAll(/[\r\n ]/g, "");
+      const parameters: ParameterData[] = [];
+      const nodeWithParameters = nodes.find((n) =>
+        n.getChildren().some((c) => ts.isParameter(c))
+      );
+      if (nodeWithParameters) {
+        const paramsChildren = nodeWithParameters
+          .getChildren()
+          .filter((a) => ts.isParameter(a));
+        for (const param of paramsChildren) {
+          const splitByColon = param.getText().split(":");
+          if (splitByColon.length >= 2) {
+            parameters.push({
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              name: splitByColon.shift()!.trim(),
+              type: splitByColon
+                .join(":")
+                .trim()
+                .replaceAll(/[\r\n ]/g, ""),
+            });
+          }
+        }
+      }
+      methods.push({
+        name: methodName,
+        returnType: methodReturnType,
+        parameters,
+        visibility,
+      });
+    }
+  }
+
   const childConstructors = subChildren.filter((n) =>
     ts.isConstructorDeclaration(n)
   );
@@ -145,5 +237,7 @@ export const extractClass = (
     constructorVisibility,
     ctor: null,
     isAbstract,
+    properties,
+    methods,
   };
 };

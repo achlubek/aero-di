@@ -165,6 +165,8 @@ const generate = (): void => {
                     extendsClass: extendssa ?? null,
                     implementsInterfaces: implementssa ?? [],
                     isAbstract,
+                    properties: [],
+                    methods: [],
                   };
 
                   expectedDatasAllInOne[className] = {
@@ -177,6 +179,8 @@ const generate = (): void => {
                     extendsClass: extendssa ?? null,
                     implementsInterfaces: implementssa ?? [],
                     isAbstract,
+                    properties: [],
+                    methods: [],
                   };
                 }
               }

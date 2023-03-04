@@ -11,6 +11,7 @@ export const run = async (options: {
   excludeGlob: string;
   outFile: string;
   verbose: boolean;
+  ignoreDuplicates: boolean;
 }): Promise<void> => {
   const filesAll = await scan(options.baseDir);
   const files = filesAll
@@ -20,10 +21,18 @@ export const run = async (options: {
     .filter((file) => !minimatch(file, options.excludeGlob))
     .map((file) => path.resolve(path.join(options.baseDir, file)));
 
-  const classesData = generateReflectionDataForFiles(options.baseDir, files, {
+  const data = generateReflectionDataForFiles(options.baseDir, files, {
     verbose: options.verbose,
+    ignoreDuplicates: options.ignoreDuplicates,
   });
-  await formatAndSave(options.baseDir, options.outFile, classesData);
+  await formatAndSave(
+    options.baseDir,
+    options.outFile,
+    data.classes,
+    data.interfaces
+  );
   // eslint-disable-next-line no-console
-  console.log(`Done! Saved data for ${classesData.length} classes`);
+  console.log(`Saved data for ${data.classes.length} classes`);
+  // eslint-disable-next-line no-console
+  console.log(`Saved data for ${data.interfaces.length} interfaces`);
 };

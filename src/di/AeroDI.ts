@@ -42,6 +42,8 @@ export class AeroDI {
       fqcn: typeName,
       implementsInterfaces: [],
       isAbstract: false,
+      properties: [],
+      methods: [],
     });
   }
 

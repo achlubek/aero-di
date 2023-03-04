@@ -1,23 +1,29 @@
 import * as path from "path";
 import * as ts from "typescript";
 
-import { ClassData } from "@app/reflection/dataInterfaces";
+import { ClassData, InterfaceData } from "@app/reflection/dataInterfaces";
 import { extractClass } from "@app/reflection/extractClass";
+import { extractInterface } from "@app/reflection/extractInterface";
 
 const isClassExported = (classNode: ts.Node): boolean => {
   const chd = classNode.getChildren();
   return chd.length > 0 && chd[0].getText().includes("export");
 };
+const isInterfaceExported = (interfaceNode: ts.Node): boolean => {
+  const chd = interfaceNode.getChildren();
+  return chd.length > 0 && chd[0].getText().includes("export");
+};
 
 export interface GenerateReflectionOptions {
   verbose?: boolean;
+  ignoreDuplicates?: boolean;
 }
 
 export function generateReflectionDataForFiles(
   baseDir: string,
   files: string[],
   options: GenerateReflectionOptions = {}
-): ClassData[] {
+): { classes: ClassData[]; interfaces: InterfaceData[] } {
   const absoluteBaseDir = path.resolve(baseDir);
   const absoluteFiles = files.map((f) => path.resolve(f));
   const program = ts.createProgram(absoluteFiles, {});
@@ -28,6 +34,7 @@ export function generateReflectionDataForFiles(
     .filter((s) => absoluteFiles.includes(path.resolve(s.fileName)));
 
   const classes: ClassData[] = [];
+  const interfaces: InterfaceData[] = [];
   for (const sourceFile of sourceFiles) {
     if (options.verbose) {
       // eslint-disable-next-line no-console
@@ -43,14 +50,30 @@ export function generateReflectionDataForFiles(
           node,
           options
         );
-        if (classes.some((c) => c.name === classData.name)) {
-          throw new Error(`Duplicate class name ${classData.name}`);
+        if (options.ignoreDuplicates !== true) {
+          if (classes.some((c) => c.name === classData.name)) {
+            throw new Error(`Duplicate class name ${classData.name}`);
+          }
         }
         classes.push(classData);
+      }
+      if (ts.isInterfaceDeclaration(node) && isInterfaceExported(node)) {
+        const interfaceData = extractInterface(
+          absoluteBaseDir,
+          sourceFile,
+          node,
+          options
+        );
+        if (options.ignoreDuplicates !== true) {
+          if (interfaces.some((c) => c.name === interfaceData.name)) {
+            throw new Error(`Duplicate interface name ${interfaceData.name}`);
+          }
+        }
+        interfaces.push(interfaceData);
       }
       ts.forEachChild(node, visitor);
     };
     ts.forEachChild(sourceFile, visitor);
   }
-  return classes;
+  return { classes, interfaces };
 }

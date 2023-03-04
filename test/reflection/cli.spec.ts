@@ -21,6 +21,7 @@ describe("cli", () => {
       includeGlob: "**/*.ts",
       excludeGlob: "**/*.spec.ts",
       verbose: true,
+      ignoreDuplicates: false,
     });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const generated = await import(

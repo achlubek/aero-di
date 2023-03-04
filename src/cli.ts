@@ -26,6 +26,11 @@ const options = {
     short: "e",
     default: "**/*.spec.ts",
   },
+  ignoreDuplicates: {
+    type: "boolean" as "string" | "boolean",
+    short: "d",
+    default: false,
+  },
   verbose: {
     type: "boolean" as "string" | "boolean",
     short: "v",
@@ -40,7 +45,8 @@ Available options (shortcut provided in parentheses):
 --outFile (-o) - default: reflectionData.ts - file name to save reflection data to - it will be stored in baseDir
 --includeGlob (-i) - default: **/*.ts - glob for matching files, only files passing this glob will be analyzed
 --excludeGlob (-e) - default: **/*.spec.ts - glob for excluding files, files matched by this glob will not be analyzed
---verbose (-v) - default: false -  if used, information about analysis process will be printed
+--verbose (-v) - default: false - if used, information about analysis process will be printed
+--ignoreDuplicates (-d) - default: false - if used, duplicate entries will be saved anyway
 
 The file that is generated is not intended to be changed, but feel free to use it!
 
@@ -58,13 +64,21 @@ try {
   const includeGlob = values.includeGlob as string;
   const excludeGlob = values.excludeGlob as string;
   const verbose = values.verbose as boolean;
+  const ignoreDuplicates = values.ignoreDuplicates as boolean;
   if (!fs.existsSync(baseDir)) {
     throw new Error(`Base directory ${baseDir} does not exist`);
   }
   process.chdir(baseDir);
   // eslint-disable-next-line no-console
   console.log(`Generating reflection to ${outFile} for directory ${baseDir}`);
-  void run({ baseDir, includeGlob, excludeGlob, outFile, verbose });
+  void run({
+    baseDir,
+    includeGlob,
+    excludeGlob,
+    outFile,
+    verbose,
+    ignoreDuplicates,
+  });
 } catch (e) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error

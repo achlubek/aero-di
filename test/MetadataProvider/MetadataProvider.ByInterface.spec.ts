@@ -15,6 +15,8 @@ describe("MetadataProvider By Implements", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassImplementsOne",
@@ -25,6 +27,8 @@ describe("MetadataProvider By Implements", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassImplementsTwo",
@@ -35,6 +39,8 @@ describe("MetadataProvider By Implements", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
