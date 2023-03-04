@@ -48,6 +48,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "ImplementingClass",
@@ -58,6 +60,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -97,6 +101,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -132,6 +138,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassImplementsTwo",
@@ -142,6 +150,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -201,6 +211,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "ImplementingClass",
@@ -211,6 +223,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: "MyClass",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -256,6 +270,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "ImplementingClass",
@@ -266,6 +282,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: "MyClass",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "ImplementingClass2",
@@ -276,6 +294,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: "MyClass",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -326,6 +346,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -360,6 +382,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: true,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -386,6 +410,8 @@ describe("AeroDI", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -420,6 +446,8 @@ describe("AeroDI", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 

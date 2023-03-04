@@ -1,6 +1,6 @@
 import { ClassData } from "@app/reflection/dataInterfaces";
 
-export class MetadataProvider {
+export class ClassMetadataProvider {
   public constructor(private classesData: ClassData[]) {}
 
   public add(...data: ClassData[]): void {

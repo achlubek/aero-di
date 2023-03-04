@@ -22,6 +22,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -45,6 +47,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -71,6 +75,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -98,6 +104,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -128,6 +136,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -160,6 +170,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -195,6 +207,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyParentClass",
@@ -205,6 +219,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyChildClass",
@@ -215,6 +231,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: "MyParentClass",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -241,6 +259,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyParamClass",
@@ -251,6 +271,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -274,6 +296,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "TestObject1",
@@ -284,6 +308,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "TestObject2",
@@ -294,6 +320,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
@@ -321,6 +349,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "TestObject1",
@@ -331,6 +361,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: "TestObjectParent",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "TestObject2",
@@ -341,6 +373,8 @@ describe("ParameterResolver", () => {
         constructorVisibility: "public",
         extendsClass: "TestObjectParent",
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 

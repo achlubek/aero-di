@@ -1,4 +1,4 @@
 export { AeroDI } from "@app/di/AeroDI";
-export { MetadataProvider } from "@app/di/MetadataProvider";
+export { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 export { ParameterResolver } from "@app/di/ParameterResolver";
 export { InstancesCache } from "@app/di/InstancesCache";

@@ -81,7 +81,7 @@ export class ParameterResolver {
   ): void {
     if (typeof actualParamValue === "object") {
       const paramObj = actualParamValue as object;
-      const paramObjMetadata = this.di.metadataProvider.getByClassName(
+      const paramObjMetadata = this.di.classMetadataProvider.getByClassName(
         paramObj.constructor.name
       );
       if (paramObjMetadata) {
@@ -90,7 +90,7 @@ export class ParameterResolver {
         );
         const isOfType = paramObj.constructor.name === expectedParamType;
         const parentTree =
-          this.di.metadataProvider.getByParentClassNameWithoutRoot(
+          this.di.classMetadataProvider.getByParentClassNameWithoutRoot(
             expectedParamType
           );
         const extendsType = parentTree.some(
@@ -123,7 +123,7 @@ export class ParameterResolver {
         }
         const isOfType = paramObj.constructor.name === expectedParamType;
         const parentTree =
-          this.di.metadataProvider.getByParentClassNameWithoutRoot(
+          this.di.classMetadataProvider.getByParentClassNameWithoutRoot(
             expectedParamType
           );
         const extendsType = parentTree.some(
@@ -176,7 +176,7 @@ export class ParameterResolver {
     }
 
     // Check by interface
-    const implementing = this.di.metadataProvider
+    const implementing = this.di.classMetadataProvider
       .getByInterface(param.type)
       .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (implementing.length === 1) {
@@ -190,7 +190,7 @@ export class ParameterResolver {
     }
 
     // Check by class
-    const being = this.di.metadataProvider.getByClassName(param.type);
+    const being = this.di.classMetadataProvider.getByClassName(param.type);
     if (
       being &&
       !being.isAbstract &&
@@ -201,7 +201,7 @@ export class ParameterResolver {
     }
 
     // Check by extends class
-    const extend = this.di.metadataProvider
+    const extend = this.di.classMetadataProvider
       .getByParentClassNameWithoutRoot(param.type)
       .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (extend.length === 1) {

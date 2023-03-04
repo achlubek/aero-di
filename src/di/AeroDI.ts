@@ -1,5 +1,5 @@
+import { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 import { InstancesCache } from "@app/di/InstancesCache";
-import { MetadataProvider } from "@app/di/MetadataProvider";
 import { ParameterResolver } from "@app/di/ParameterResolver";
 import {
   ClassConstructorNotPublicException,
@@ -14,11 +14,11 @@ import { ClassData, ConstructorOf } from "@app/reflection/dataInterfaces";
 
 export class AeroDI {
   public readonly parameterResolver: ParameterResolver;
-  public readonly metadataProvider: MetadataProvider;
+  public readonly classMetadataProvider: ClassMetadataProvider;
   public readonly instancesCache: InstancesCache;
 
   public constructor(classesData: ClassData[]) {
-    this.metadataProvider = new MetadataProvider(classesData);
+    this.classMetadataProvider = new ClassMetadataProvider(classesData);
     this.instancesCache = new InstancesCache();
     this.parameterResolver = new ParameterResolver(this);
     this.registerInstance(this);
@@ -33,7 +33,8 @@ export class AeroDI {
     value: T
   ): void {
     this.instancesCache.save(typeName, value);
-    this.metadataProvider.add({
+    this.classMetadataProvider.remove((m) => m.name === typeName);
+    this.classMetadataProvider.add({
       name: typeName,
       constructorParameters: [],
       ctor: null,
@@ -42,6 +43,8 @@ export class AeroDI {
       fqcn: typeName,
       implementsInterfaces: [],
       isAbstract: false,
+      properties: [],
+      methods: [],
     });
   }
 
@@ -67,7 +70,8 @@ export class AeroDI {
   }
 
   public async getByInterface<T>(interfaceName: string): Promise<T> {
-    const implementing = this.metadataProvider.getByInterface(interfaceName);
+    const implementing =
+      this.classMetadataProvider.getByInterface(interfaceName);
     if (implementing.length === 0) {
       throw new NoInterfaceImplementationsFoundException(interfaceName);
     }
@@ -79,7 +83,7 @@ export class AeroDI {
   }
 
   public async getByClassName<T>(className: string): Promise<T> {
-    const metadata = this.metadataProvider.getByClassName(className);
+    const metadata = this.classMetadataProvider.getByClassName(className);
     if (!metadata) {
       throw new ClassMetadataNotFoundException(className);
     }
@@ -91,7 +95,7 @@ export class AeroDI {
   }
 
   public async getByParentClassName<T>(name: string): Promise<T> {
-    const extending = this.metadataProvider
+    const extending = this.classMetadataProvider
       .getByParentClassNameWithoutRoot(name)
       .filter((e) => !e.isAbstract && e.constructorVisibility === "public");
     if (extending.length === 0) {

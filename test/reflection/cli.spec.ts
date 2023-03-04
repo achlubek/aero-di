@@ -21,6 +21,7 @@ describe("cli", () => {
       includeGlob: "**/*.ts",
       excludeGlob: "**/*.spec.ts",
       verbose: true,
+      ignoreDuplicates: false,
     });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const generated = await import(
@@ -34,7 +35,7 @@ describe("cli", () => {
 
     assert.isArray(generatedData);
 
-    assert.equal(spy.callCount, generatedData.length + howManyFiles + 1);
+    assert.equal(spy.callCount, generatedData.length + howManyFiles + 2);
 
     sandbox.restore();
 

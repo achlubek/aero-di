@@ -1,9 +1,9 @@
 import { assert } from "chai";
 
-import { MetadataProvider } from "@app/di/MetadataProvider";
+import { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 import { ClassData } from "@app/reflection/dataInterfaces";
 
-describe("MetadataProvider By Name", () => {
+describe("ClassMetadataProvider By Name", () => {
   it("should return metadata by class name", () => {
     const testData: ClassData[] = [
       {
@@ -15,6 +15,8 @@ describe("MetadataProvider By Name", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
       {
         name: "MyClassB",
@@ -25,10 +27,12 @@ describe("MetadataProvider By Name", () => {
         constructorVisibility: "private",
         extendsClass: null,
         isAbstract: false,
+        properties: [],
+        methods: [],
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const getByEmptyName = provider.getByClassName("");
     const getByNonExistingName = provider.getByClassName("NonExisting");

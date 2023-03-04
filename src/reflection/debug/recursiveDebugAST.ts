@@ -4,7 +4,7 @@ const initArray = <T>(size: number, constructor: (index: number) => T): T[] => {
   return [...new Array<T>(size)].map((_, i) => constructor(i));
 };
 
-const determineType = (node: ts.Node): string => {
+export const determineType = (node: ts.Node): string => {
   if (ts.isNumericLiteral(node)) return "NumericLiteral";
   if (ts.isBigIntLiteral(node)) return "BigIntLiteral";
   if (ts.isStringLiteral(node)) return "StringLiteral";
@@ -175,6 +175,7 @@ const determineType = (node: ts.Node): string => {
   if (ts.isSourceFile(node)) return "SourceFile";
   if (ts.isBundle(node)) return "Bundle";
   if (ts.isUnparsedSource(node)) return "UnparsedSource";
+  if (ts.isPropertyName(node)) return "PropertyName";
   return "Unknown";
 };
 

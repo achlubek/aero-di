@@ -44,9 +44,9 @@ const constructorParameterTypes = [
   "string",
   "ConstrainDOMString",
   "ConstrainDOMString<T>",
-  "number | undefined",
-  "ConstrainDOMString | undefined",
-  "ConstrainDOMString<T> | undefined",
+  "number|undefined",
+  "ConstrainDOMString|undefined",
+  "ConstrainDOMString<T>|undefined",
 ];
 
 const constructorParamFieldTypeArr = [
@@ -165,6 +165,8 @@ const generate = (): void => {
                     extendsClass: extendssa ?? null,
                     implementsInterfaces: implementssa ?? [],
                     isAbstract,
+                    properties: [],
+                    methods: [],
                   };
 
                   expectedDatasAllInOne[className] = {
@@ -177,6 +179,8 @@ const generate = (): void => {
                     extendsClass: extendssa ?? null,
                     implementsInterfaces: implementssa ?? [],
                     isAbstract,
+                    properties: [],
+                    methods: [],
                   };
                 }
               }
