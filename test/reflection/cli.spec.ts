@@ -35,7 +35,7 @@ describe("cli", () => {
 
     assert.isArray(generatedData);
 
-    assert.equal(spy.callCount, generatedData.length + howManyFiles + 1);
+    assert.equal(spy.callCount, generatedData.length + howManyFiles + 2);
 
     sandbox.restore();
 

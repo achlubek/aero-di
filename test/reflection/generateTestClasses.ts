@@ -44,9 +44,9 @@ const constructorParameterTypes = [
   "string",
   "ConstrainDOMString",
   "ConstrainDOMString<T>",
-  "number | undefined",
-  "ConstrainDOMString | undefined",
-  "ConstrainDOMString<T> | undefined",
+  "number|undefined",
+  "ConstrainDOMString|undefined",
+  "ConstrainDOMString<T>|undefined",
 ];
 
 const constructorParamFieldTypeArr = [
