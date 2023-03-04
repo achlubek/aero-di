@@ -13,5 +13,6 @@ describe("generateReflection for fields", () => {
     );
 
     assert.lengthOf(generatedAll.classes, 1);
+    assert.lengthOf(generatedAll.interfaces, 1);
   });
 });
