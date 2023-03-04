@@ -8,7 +8,7 @@ Automatic, no decorators, dependency injection library for your Typescript proje
 - Automatically finds suitable class based on a parent class
 - Autowires everything, just like in Symfony or Spring
 - Works just as fine when compiled
-- As a bonus - exposes class reflection data
+- As a bonus - exposes class and interface reflection data
 
 ## Installation
 To install, if you use npm:
@@ -100,6 +100,7 @@ well, which is more handy, but nothing prevents you from using the reflection fi
 
 Reflection saved in the file is basically an array of objects with following interface:
 ```ts
+// For Classes:
   fqcn: string; // Fully qualified class name - path and name
   name: string; // Class name
   ctor: Promise<Constructor> | null; // Constructor for that the class - null if not public
@@ -108,6 +109,14 @@ Reflection saved in the file is basically an array of objects with following int
   constructorParameters: ParameterData[]; // Array of constructor parameters, with name and type fields
   constructorVisibility: "public" | "protected" | "private"; // Constructor visibility
   isAbstract: boolean; // Is the class abstract or not
+  properties: PropertyData[]; // Class properties
+  methods: MethodData[]; // Class methods
+// For Interfaces:
+  fqin: string; // Fully qualified interface name - path and name
+  name: string; // Interface name
+  properties: PropertyData[]; // Interface propreties
+  extendsInterface: string | null; // Parent of the interface - null if not extending
+  methods: MethodData[]; // Interface methods
 ```
 Using this you can, for example, create an instance of a class by name, 
 which is useful, for example, when recreating events from the database
@@ -141,22 +150,22 @@ scanned by the reflection generator, this is not needed!
 You can get class reflection data using an instance, a string of the class name, or a parent class name:
 
 ```ts
-const metadataByInstance = di.metadataProvider.getByInterface("MyInterface");
-const metadataByClassName = di.metadataProvider.getByClassName("MyClass");
-const metadataByParentClass = di.metadataProvider.getByParentClassNameWithRoot("MyBaseClass");
+const metadataByInstance = di.classMetadataProvider.getByInterface("MyInterface");
+const metadataByClassName = di.classMetadataProvider.getByClassName("MyClass");
+const metadataByParentClass = di.classMetadataProvider.getByParentClassNameWithRoot("MyBaseClass");
 ```
 
 ### Get classes implementing an interface
 You can get class reflection data of classes implementing an interface like that:
 ```ts
-const metadatas = di.metadataProvider.getByInterface("MyInterface");
+const metadatas = di.classMetadataProvider.getByInterface("MyInterface");
 ```
 
 ### Get a class hierarchy tree, based on extends
 You can get class reflection data of classes in a class hierarchy tree, based on extends like that:
 ```ts
-const withRootClass = di.metadataProvider.getByParentClassNameWithRoot("MyBaseClass");
-const withoutRootClass = di.metadataProvider.getByParentClassNameWithoutRoot("MyBaseClass");
+const withRootClass = di.classMetadataProvider.getByParentClassNameWithRoot("MyBaseClass");
+const withoutRootClass = di.classMetadataProvider.getByParentClassNameWithoutRoot("MyBaseClass");
 ```
 
 ### Register a global parameter

@@ -1,9 +1,9 @@
 import { assert } from "chai";
 
-import { MetadataProvider } from "@app/di/MetadataProvider";
+import { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 import { ClassData } from "@app/reflection/dataInterfaces";
 
-describe("MetadataProvider By Extends", () => {
+describe("ClassMetadataProvider By Extends", () => {
   it("should return metadata by extended class", () => {
     const testData: ClassData[] = [
       {
@@ -56,7 +56,7 @@ describe("MetadataProvider By Extends", () => {
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const getByEmptyParentName = provider.getByParentClassNameWithRoot("");
     const getByNonExistingParentName =
@@ -129,7 +129,7 @@ describe("MetadataProvider By Extends", () => {
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const getByEmptyParentName = provider.getByParentClassNameWithRoot("");
     const getByNonExistingParentName =

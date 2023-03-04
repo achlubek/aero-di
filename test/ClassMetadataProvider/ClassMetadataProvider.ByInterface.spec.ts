@@ -1,9 +1,9 @@
 import { assert } from "chai";
 
-import { MetadataProvider } from "@app/di/MetadataProvider";
+import { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 import { ClassData } from "@app/reflection/dataInterfaces";
 
-describe("MetadataProvider By Implements", () => {
+describe("ClassMetadataProvider By Implements", () => {
   it("should return metadata by interface name", () => {
     const testData: ClassData[] = [
       {
@@ -44,7 +44,7 @@ describe("MetadataProvider By Implements", () => {
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const getByEmptyInterface = provider.getByInterface("");
     const getByNonExistingInterface = provider.getByInterface(

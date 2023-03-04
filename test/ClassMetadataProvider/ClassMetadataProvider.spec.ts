@@ -1,9 +1,9 @@
 import { assert } from "chai";
 
-import { MetadataProvider } from "@app/di/MetadataProvider";
+import { ClassMetadataProvider } from "@app/di/ClassMetadataProvider";
 import { ClassData } from "@app/reflection/dataInterfaces";
 
-describe("MetadataProvider Common", () => {
+describe("ClassMetadataProvider Common", () => {
   it("should return all metadata", () => {
     const testData: ClassData[] = [
       {
@@ -32,7 +32,7 @@ describe("MetadataProvider Common", () => {
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const data = provider.getAll();
 
@@ -67,7 +67,7 @@ describe("MetadataProvider Common", () => {
       },
     ];
 
-    const provider = new MetadataProvider(testData);
+    const provider = new ClassMetadataProvider(testData);
 
     const data = provider.getAll();
 
